@@ -63,17 +63,15 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", " ", cmd_si},
-  { "info", " ", cmd_info},
-  {0,0,0},
-
+  { "si", " step one instruction", cmd_si},
+  { "info", "print regfiles ", cmd_info}
 };
 
 #define NR_CMD ARRLEN(cmd_table)
 
 static int cmd_help(char *args) {
   /* extract the first argument */
-  char *arg = strtok(NULL, " ");
+  char *arg = strtok(args, " ");
   int i;
 
   if (arg == NULL) {
@@ -95,9 +93,27 @@ static int cmd_help(char *args) {
 }
 
 static int cmd_info(char *args){
+  char *cmd = strtok(args, " ");
+  if(strcmp(cmd,"r")==0){
+    Log("============================================");
+    isa_reg_display();
+    Log("============================================");
+  }
+  else{
+    printf("Unknown command '%s'\n", cmd);
+    cmd_help("info");
+  }
   return 0;
 }
 static int cmd_si(char *args){
+  uint64_t cnt;
+  if (args == NULL) { cpu_exec(1); return 0;}
+  else if(sscanf(args,"%lu",&cnt) == 1){ cpu_exec(cnt);}
+  else {
+    printf("'%s' must be an integer.\n", args); 
+    cmd_help("si");
+  }
+
   return 0;
 }
 

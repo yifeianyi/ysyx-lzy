@@ -22,10 +22,19 @@ const char *regs[] = {
   "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
-
+static void PrintRegsRV64(){
+  int cnt = 0;
+  for(int i=0;i<32;i++){
+    cnt = (cnt + 1)%4;
+    printf("%3s:%8lx \t\t",regs[i], gpr(i));
+    if(!cnt)printf("\n");
+  }
+}
 void isa_reg_display() {
+  PrintRegsRV64();
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
   return 0;
 }
+
