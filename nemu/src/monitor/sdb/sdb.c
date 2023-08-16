@@ -18,7 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-
+#include <memory/paddr.h>
 static int is_batch_mode = false;
 
 void init_regex();
@@ -52,7 +52,7 @@ static int cmd_q(char *args) {
 static int cmd_info(char *args);
 static int cmd_si(char *args);
 static int cmd_help(char *args);
-
+static int cmd_x(char *args);
 static struct {
   const char *name;
   const char *description;
@@ -64,11 +64,35 @@ static struct {
 
   /* TODO: Add more commands */
   { "si", " step one instruction", cmd_si},
-  { "info", "print regfiles ", cmd_info}
+  { "info", "print regfiles ", cmd_info},
+  { "x", "print segment memory", cmd_x}
 };
 
 #define NR_CMD ARRLEN(cmd_table)
 
+
+static int cmd_x(char *args){
+  if(args == NULL){
+    printf("x Args is NULL\n");
+    cmd_help("x");
+    return 0;
+  }
+  char *tmp = args;
+  uint32_t len;
+  paddr_t paddr;
+  if(sscanf(tmp,"%u%x",&len,&paddr) == 2){
+    paddr_t tmp_addr;
+    for(uint32_t i=0;i<len;i++){
+      tmp_addr = paddr_read(paddr+i*4,4);
+      printf("Addr%d: "FMT_PADDR "\n",i+1,tmp_addr);
+    }
+  }
+  else{
+    printf("x Args is error\n");
+    cmd_help("x");
+  }
+  return 0;
+}
 static int cmd_help(char *args) {
   /* extract the first argument */
   char *arg = strtok(args, " ");

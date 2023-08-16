@@ -40,7 +40,7 @@ static struct rule {
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
 };
-
+//============================ pre ==========================================
 #define NR_REGEX ARRLEN(rules)
 
 static regex_t re[NR_REGEX] = {};
@@ -62,10 +62,12 @@ void init_regex() {
   }
 }
 
+//============================ token ==========================================
 typedef struct token {
   int type;
   char str[32];
 } Token;
+
 
 static Token tokens[32] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
@@ -111,7 +113,7 @@ static bool make_token(char *e) {
   return true;
 }
 
-
+//============================ parse ============================================
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
@@ -120,6 +122,12 @@ word_t expr(char *e, bool *success) {
 
   /* TODO: Insert codes to evaluate the expression. */
   TODO();
-
+  
   return 0;
 }
+
+static void* AST_expr();
+static void* AST_mul();
+static void* AST_unary();
+static void* AST_primary();
+static uint32_t genVal();
