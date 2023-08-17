@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #endif
 
+
 #if CONFIG_MBASE + CONFIG_MSIZE > 0x100000000ul
 #define PMEM64 1
 #endif
@@ -45,5 +46,8 @@ typedef MUXDEF(PMEM64, uint64_t, uint32_t) paddr_t;
 typedef uint16_t ioaddr_t;
 
 #include <debug.h>
+#ifdef CONFIG_TRACE
+#include <trace.h>
+#endif
 
 #endif
