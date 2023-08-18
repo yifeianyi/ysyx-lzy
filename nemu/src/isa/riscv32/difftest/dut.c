@@ -16,9 +16,34 @@
 #include <isa.h>
 #include <cpu/difftest.h>
 #include "../local-include/reg.h"
-
+void diff_compare_regsdisplay(CPU_state *ref_r,int idx){
+  for (int i = 0; i < 32; i++)
+  {
+    if(i==idx){
+      printf("\033[31m%s:\t dut = %016lx\t  ref = %016lx\033[37m \033[0m\n", reg_name(i), gpr(i),ref_r->gpr[i]);
+    }
+    else{
+      printf("%s:\t dut = %016lx\t  ref = %016lx\n", reg_name(i), gpr(i),ref_r->gpr[i]);
+    }
+    
+  }
+  printf("\n");
+}
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
-  return false;
+  // if( ref_r->pc != pc )return false;
+
+  for(int i=0;i<32;i++){
+    if(ref_r->gpr[i] != gpr(i))
+    {
+      Log("reg is error!!!");
+      printf("PC:\n\tdut:0x%08lx \n\tref:0x%08lx\n",pc,ref_r->pc);
+      
+      diff_compare_regsdisplay(ref_r,i);
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 void isa_difftest_attach() {

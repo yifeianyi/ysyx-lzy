@@ -1,4 +1,5 @@
 #include <trace.h>
+#ifdef CONFIG_ITRACE_IRINGBUF
 struct Buffer{
     char logbuf[128];
     vaddr_t pc;
@@ -22,3 +23,4 @@ void print_iringbuf(){
         else break;
     }
 }
+#endif
