@@ -159,7 +159,7 @@ config ITRACE_IRINGBUF
 config ITRACE_IRINGBUF_SIZE
   depends on ITRACE_IRINGBUF
   int "When iringbuf is enabled (unit: number of buffer size)"
-  default 100
+  default 50
 
 config MTRACE
   depends on TRACE
