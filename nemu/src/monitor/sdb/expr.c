@@ -126,8 +126,8 @@ word_t expr(char *e, bool *success) {
   return 0;
 }
 
-static void* AST_expr();
-static void* AST_mul();
-static void* AST_unary();
-static void* AST_primary();
-static uint32_t genVal();
+// static void* AST_expr();
+// static void* AST_mul();
+// static void* AST_unary();
+// static void* AST_primary();
+// static uint32_t genVal();
