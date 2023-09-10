@@ -13,15 +13,11 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <cpu/cpu.h>
+#include <utils.h>
+// NEMUState nemu_state = { .state = NEMU_STOP };
 
-void sdb_mainloop();
-
-void engine_start() {
-#ifdef CONFIG_TARGET_AM
-  cpu_exec(-1);
-#else
-  /* Receive commands from user. */
-  sdb_mainloop();// simple debugging
-#endif
-}
+// int is_exit_status_bad() {
+//   int good = (nemu_state.state == NEMU_END && nemu_state.halt_ret == 0) ||
+//     (nemu_state.state == NEMU_QUIT);
+//   return !good;
+// }

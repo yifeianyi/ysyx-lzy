@@ -13,15 +13,11 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <cpu/cpu.h>
-
-void sdb_mainloop();
-
-void engine_start() {
-#ifdef CONFIG_TARGET_AM
-  cpu_exec(-1);
-#else
-  /* Receive commands from user. */
-  sdb_mainloop();// simple debugging
+#include <common.h>
+#ifndef CONFIG_TARGET_AM
+#include <time.h>
 #endif
+
+void init_rand() {
+  srand(MUXDEF(CONFIG_TARGET_AM, 0, time(0)));
 }

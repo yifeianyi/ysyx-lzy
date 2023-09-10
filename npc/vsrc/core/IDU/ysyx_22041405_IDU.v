@@ -1,49 +1,49 @@
-module ysyx_22041405_IDU(
-    input clk,
-    input rst,
+module ysyx_22041405_IDU#(parameter WIDTH = 32, ADDR_WIDTH = 5) (
+    input   clk,
+    input   rst,
 
-    input [WIDTH - 1: 0] instr,
-    input [WIDTH - 1: 0] pc,
-
-    input                rf_we,
-    input [WIDTH - 1: 0] rf_waddr,
-    input [WIDTH - 1: 0] rf_wdata,
+    input [WIDTH - 1: 0] inst,
     output[WIDTH - 1: 0] rf_rs1,
     output[WIDTH - 1: 0] rf_rs2,
+    output[WIDTH - 1: 0] Imm,
+    input [WIDTH - 1: 0] alu_result,
 
-    //contrl signal
-    output              alu_src1_sel,
-    output              alu_src2_sel,
-    output [3:0]        alu_opcode,
-    output              instr_type
+    output        [7: 0] alu_opcode,
+    output               alu_src2_sel,
+    output               alu_add_or_sub,
+    output               alu_U_or_S
 );
-    ysyx_22041405_decoder(
-        .instr          (instr),
-        .instr_type     (instr_type),
+    ysyx_22041405_Ctrl ctrl(
+        .inst       (inst),
+        .rf_raddr1  (rf_raddr1),
+        .rf_raddr2  (rf_raddr2),
+        .rf_waddr   (rf_waddr),
+        .Imm        (Imm),
 
-        .rf_we          (rf_we),
-        .rf_raddr1      (rf_raddr1),
-        .rf_raddr2      (rf_raddr2),
-        .rf_waddr       (rf_waddr),
-        .rf_rd_sel      (rf_rd_sel),
-
-        .alu_src1_sel   (alu_src1_sel),
+        // Ctrl
+        .alu_opcode     (alu_opcode),
         .alu_src2_sel   (alu_src2_sel),
-        .alu_opcode     (alu_opcode)
-    )
+        .alu_add_or_sub (alu_add_or_sub),
+        .alu_U_or_S     (alu_U_or_S)
+    );
 
-    #(ADDR_WIDTH = 5,DATA_WIDTH = 32) regsfile(
-        .clk            (clk),
-        .rst            (rst),
+    wire [ADDR_WIDTH - 1: 0] rf_raddr1;
+    wire [ADDR_WIDTH - 1: 0] rf_raddr2;
+    wire [ADDR_WIDTH - 1: 0] rf_waddr;
+    wire [     WIDTH - 1: 0] rf_wdata;
 
-        .rf_raddr1      (rf_raddr1),
-        .rf_raddr2      (rf_raddr2),
-        .rf_src1        (rf_raddr1),
-        .rf_src2        (rf_raddr2),
+    assign rf_wdata = alu_result;   //过渡方案
+    ysyx_22041405_regsfile regsfile(
+        .clk        (clk),
+        .rst        (rst),
 
-        .rf_we          (rf_we),
-        .rf_wdata       (rf_wdata),
-        .rf_waddr       (rf_waddr)
-    )
+        .rf_raddr1  (rf_raddr1),
+        .rf_raddr2  (rf_raddr2),
+        .rf_waddr   (rf_waddr),
 
+        .rf_rs1     (rf_rs1),
+        .rf_rs2     (rf_rs2),
+        .rf_wdata   (rf_wdata)
+    );
+    
 endmodule
