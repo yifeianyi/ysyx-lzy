@@ -1,20 +1,40 @@
-`include "./ysyx22041405_decoder_n_m.v"
-`include "./ysyx22041405_regfile.v"
+// `include "./ysyx22041405_decoder_n_m.v"
 module rv_IDU#(parameter WIDTH = 32)(
+    /*       input       */
     input   clk,
     input   rst,
-
-    //regfiles port
     input [WIDTH - 1: 0] inst,
-    // input [WIDTH - 1: 0] rf_rd,
+    input [WIDTH - 1: 0] rf_wdata,
+
+    /*      output       */
     output[WIDTH - 1: 0] Imm,
-    output[WIDTH - 1: 0] rf_rdata1,
-    output[WIDTH - 1: 0] rf_rdata2,
-    output[WIDTH - 1: 0] rf_wdata,
+    output[WIDTH - 1: 0] rf_rs1,
+    output[WIDTH - 1: 0] rf_rs2,
     
-    //============ ALU ==============
-    output [2:0] 
-);
+    /*    Ctrl signal    */
+    // EXU 
+    output [2:0]          alu_Ctrl,
+    output                alu_s1_sel,
+    output                alu_s2_sel,
+    output                branch_add4,
+    output                branch_and,
+    output                branch_src,
+
+    // MEM
+    output                mem_addr_sel,
+
+    // WBU
+    output                wb_sel,
+    output                wb_mask
+
+);  
+    localparam R_TYPE = 7'b0100000;
+    localparam I_TYPE = 7'b0010000;
+    localparam S_TYPE = 7'b0001000;
+    localparam B_TYPE = 7'b0000100;
+    localparam U_TYPE = 7'b0000010;
+    localparam J_TYPE = 7'b0000001;
+
     //instruction split
     wire [ 6: 0]    opcode;
     wire [14:12]    funct3;
@@ -33,9 +53,9 @@ module rv_IDU#(parameter WIDTH = 32)(
     assign   rs1  = inst [19:15];
     assign   rs2  = inst [24:20];
 
-    ysyx22041405_decoder_n_m decoder0_7_128#(.n(7),.m(128))(.in (opcode),.out(opcode_d));
-    ysyx22041405_decoder_n_m decoder1_7_128#(.n(7),.m(128))(.in (funct7),.out(funct7_d));
-    ysyx22041405_decoder_n_m decoder2_3_8  #(.n(7),.m(128))(.in (funct3),.out(funct3_d));
+    ysyx22041405_decoder_n_m #(.n(7),.m(128)) decoder0_7_128 (.in (opcode),.out(opcode_d));
+    ysyx22041405_decoder_n_m #(.n(7),.m(128)) decoder1_7_128 (.in (funct7),.out(funct7_d));
+    ysyx22041405_decoder_n_m #(.n(3),.m(8)) decoder2_3_8   (.in (funct3),.out(funct3_d));
 
     wire [ 6: 0]    inst_type;
     wire            R_type;
@@ -46,13 +66,13 @@ module rv_IDU#(parameter WIDTH = 32)(
     wire            J_type;
     wire            Ebreak;
 
-    assign R_type    = opcode_d[6'b0110011];
-    assign I_type    = opcode_d[6'b0000011] || opcode_d[6'b0010011] || opcode_d[6'b1100111];
-    assign S_type    = opcode_d[6'b0100011];
-    assign B_type    = opcode_d[6'b1100011];
-    assign U_type    = opcode_d[6'b0010111];
-    assign J_type    = opcode_d[6'b1101111];
-    assign Ebreak    = opcode_d[6'b1110011];
+    assign R_type    = opcode_d[7'b0110011];
+    assign I_type    = opcode_d[7'b0000011] || opcode_d[7'b0010011] || opcode_d[7'b1100111];
+    assign S_type    = opcode_d[7'b0100011];
+    assign B_type    = opcode_d[7'b1100011];
+    assign U_type    = opcode_d[7'b0010111];
+    assign J_type    = opcode_d[7'b1101111];
+    assign Ebreak    = opcode_d[7'b1110011];
     assign inst_type = {Ebreak, R_type, I_type, S_type, B_type, U_type, J_type};
     //======================= Imm generated ==================================
     //inst split
@@ -76,12 +96,12 @@ module rv_IDU#(parameter WIDTH = 32)(
 
 
     //imm_type
-    wire [WIDTH-1:0]Imm;
     wire [WIDTH-1:0]imm_I;
     wire [WIDTH-1:0]imm_S;
     wire [WIDTH-1:0]imm_B;
     wire [WIDTH-1:0]imm_U;
     wire [WIDTH-1:0]imm_J;
+    reg  [WIDTH-1:0]Imm_d;
     assign imm_I = {{21{inst_31}}, inst_30_25, inst_24_21, inst_20};
     assign imm_S = {{21{inst_31}}, inst_30_25, inst_11_8 , inst_7};
     assign imm_B = {{20{inst_31}}, inst_7, inst_30_25, inst_11_8, 1'b0};
@@ -90,24 +110,22 @@ module rv_IDU#(parameter WIDTH = 32)(
 
     always @(*)begin
         case (inst_type)
-            I_TYPE: Imm = imm_I;
-            S_TYPE: Imm = imm_S;
-            B_TYPE: Imm = imm_B;
-            U_TYPE: Imm = imm_U;
-            J_TYPE: Imm = imm_J;
-            default: Imm = {WIDTH{0}};
+            I_TYPE: Imm_d = imm_I;
+            S_TYPE: Imm_d = imm_S;
+            B_TYPE: Imm_d = imm_B;
+            U_TYPE: Imm_d = imm_U;
+            J_TYPE: Imm_d = imm_J;
+            default: Imm_d = {WIDTH{1'b0}};
         endcase
     end
+    assign Imm = Imm_d;
     //=======================     regfile    ==================================
     // outports wire
     wire            we;
     wire [31:0]     rf_rdata1;
     wire [31:0]     rf_rdata2;
-    wire [31:0]     rf_wdata;
     assign we = 1'b1;
-    ysyx22041405_regfile u_regfile#(
-        .WIDTH( 32  )
-    )
+    ysyx22041405_regfile #(.WIDTH( 32  ))   u_regfile
     (
         .clk        ( clk       ),
         .raddr1     ( rs1       ),

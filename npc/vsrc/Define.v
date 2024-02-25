@@ -1,5 +1,8 @@
 `timescale 1ps/1ps
-
+// `include "ysyx22041405_IFU.v"
+// `include "ysyx22041405_IDU.v"
+// `include "ysyx22041405_EXU.v"
+// `include "ysyx22041405_MEM.v"
 //inst_type
 `define R_TYPE 7'b0100000
 `define I_TYPE 7'b0010000

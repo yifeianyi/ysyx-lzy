@@ -12,7 +12,7 @@ module ysyx22041405_regfile#(parameter WIDTH = 32)(
     input  wire [WIDTH -1: 0] wdata
 );
 `define REGNUM 32
-reg [WIDTH -1: 0] rf[REGNUM -1: 0];
+reg [WIDTH -1: 0] rf[`REGNUM -1: 0];
 
 //WRITE
 always @(posedge clk) begin
@@ -20,9 +20,9 @@ always @(posedge clk) begin
 end
 
 //READ OUT 1
-assign rdata1 = (raddr1==5'b0) ? {WIDTH{0}} : rf[raddr1];
+assign rdata1 = (raddr1==5'b0) ? {WIDTH{1'b0}} : rf[raddr1];
 
 //READ OUT 2
-assign rdata2 = (raddr2==5'b0) ? {WIDTH{0}} : rf[raddr2];
+assign rdata2 = (raddr2==5'b0) ? {WIDTH{1'b0}} : rf[raddr2];
 
 endmodule

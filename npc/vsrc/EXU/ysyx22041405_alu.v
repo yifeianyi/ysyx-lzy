@@ -34,13 +34,13 @@ module ysyx22041405_alu#(parameter WIDTH = 32)(
     wire [WIDTH - 1: 0] alu_xor;
 
     assign alu_add      = src1 + src2;
-    assign alu_Lshift   = 1'0;
-    assign alu_slt      = 1'0;
-    assign alu_Rshift   = 1'0;
-    assign alu_direct   = 1'0;
-    assign alu_and      = 1'0;
-    assign alu_or       = 1'0;
-    assign alu_xor      = 1'0;
+    assign alu_Lshift   = 1'b0;
+    assign alu_slt      = 1'b0;
+    assign alu_Rshift   = 1'b0;
+    assign alu_direct   = 1'b0;
+    assign alu_and      = 1'b0;
+    assign alu_or       = 1'b0;
+    assign alu_xor      = 1'b0;
 
     
     // select alu_op
@@ -65,7 +65,6 @@ module ysyx22041405_alu#(parameter WIDTH = 32)(
         ALUAND:     alu_result_d = alu_and;
         ALUOR:      alu_result_d = alu_or;
         ALUXOR:     alu_result_d = alu_xor;
-        default:    alu_result_d = 0;
     end
 
 endmodule //ysyx22041405_alu

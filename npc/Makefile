@@ -1,14 +1,14 @@
 #顶层模块名
-TOPNAME   =top
+TOPNAME   =rv_percpu
 INC_PATH := $(abspath $(shell find ./csrc/include -type d -print | grep -v '/\.'))
 
 #verilator的编译选项
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD -cc  --exe
 VERILATOR_CFLAGS +=	-O3 --x-assign fast --x-initial fast 
-VERILATOR_CFLAGS += --trace --threads {1} --output-split {1}-Wall 
+VERILATOR_CFLAGS += --trace --output-split {1}-Wall #--threads {1}
 VERILATOR_CFLAGS += -Wno-fatal		# only print lint warning, but not terminate compile.
-# VERILATOR_CFLAGS += -Wno-UNUSED 		# close <unused> warning.
+VERILATOR_CFLAGS += -Wno-UNUSED 		# close <unused> warning.
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 # BIN = $(OBJ_DIR)/V$(TOPNAME)
@@ -32,11 +32,12 @@ IMG ?=
 ARGS ?=
 
 #后构建verilator编译规则
-gen: $(VSRCS) $(CSRCS)
+gen: $(VSRCS) 
 	@rm -rf $(OBJ_DIR)
 	@echo "=================== start rtl gen compile ============================"
 	@$(VERILATOR) $(VERILATOR_CFLAGS) \
-		--top-module $(TOPNAME) $(VSRCS) $(CSRCS) --Mdir $(OBJ_DIR)\
+		-I$(VSRCS)\
+		--top-module $(TOPNAME) $(VSRCS)  --Mdir $(OBJ_DIR)\
 		$(addprefix -CFLAGS , $(CFLAGS))
 	@echo "=================== start rtl gen finished ==========================="
 
