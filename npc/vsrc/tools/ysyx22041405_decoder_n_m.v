@@ -6,5 +6,4 @@ genvar i;
 generate for (i=0; i<m; i=i+1) begin : gen_for_dec_n_m
     assign out[i] = (in == i);
 end endgenerate
-    
 endmodule //ysyx22041405_decoder_n_m

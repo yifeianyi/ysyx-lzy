@@ -25,6 +25,8 @@ CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*
 
 #verilator的一些添加标志，top名，链接库，反汇编
 CFLAGS += $(addprefix -I, $(INC_PATH)) -DTOP_NAME="\"V$(TOPNAME)\"" -O3 -MMD -Wall
+## 过渡方案,关掉c++将字符串常量转换为char*的警告
+CFLAGS += -Wno-write-strings
 LIBS += $(shell llvm-config --libs) 
 LDFLAGS += -lSDL2 -lSDL2_image -lreadline -ldl -pie -fPIE $(LIBS)
 
@@ -88,9 +90,22 @@ countv:
 countc:
 	find . -name "*.[ch]" | xargs wc -l
 
+
+
+# ================================ genTest ====================================
+TEST ?= test/addi
+RV = riscv64-linux-gnu
+gentest: $(TEST).S
+	@$(RV)-as $(TEST).S -o $(TEST).o
+	@$(RV)-ld $(TEST).o -o $(TEST)
+	@$(RV)-objcopy --only-section=.text -O binary $(TEST) $(TEST).bin
+
+	
+
 clean:
 	@rm -rf obj_dir top.vcd
-	 rm -rf $(BUILD_DIR)  obj_dir *.vcd
+	@rm -rf $(BUILD_DIR)  obj_dir *.vcd
+	@find test -type f ! -name "*.S" -delete
 
-.PHOYN: gen sim run clean count countv countc
+.PHOYN: gen sim run clean count countv countc test
 include ../Makefile

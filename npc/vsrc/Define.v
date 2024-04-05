@@ -11,3 +11,7 @@
 `define U_TYPE 7'b0000010
 `define J_TYPE 7'b0000001
 `define EBREAK 7'b1000000
+
+`define MASK_BYTE 32'h000000ff
+`define MASK_HALF 32'h0000ffff
+`define MASK_WORD 32'hffffffff
