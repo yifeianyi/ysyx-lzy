@@ -11,6 +11,7 @@
 // [Additional_Notes_and_Information]
 //
 ////////////////////////////////////////////////////////////////////////////////
+`include "Define.v"
 module rv_IDU#(parameter WIDTH = 32)(
     /*       input       */
     input   clk,

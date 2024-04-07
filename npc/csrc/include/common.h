@@ -49,6 +49,7 @@ typedef struct {
 } NPCState;
 
 
+
 // ------------------- log -------------------
 
 #define ASNI_FG_BLACK   "\33[1;30m"

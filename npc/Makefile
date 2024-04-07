@@ -4,12 +4,13 @@ INC_PATH := $(abspath $(shell find ./csrc/include -type d -print))
 
 #verilator的编译选项
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD -cc  --exe 
+VERILATOR_CFLAGS += -MMD -cc   
 VERILATOR_CFLAGS +=	-O3 --x-assign fast --x-initial fast --trace 
 VERILATOR_CFLAGS += -Wno-fatal		# only print lint warning, but not terminate compile.
 VERILATOR_CFLAGS += -Wno-UNUSED 		# close <unused> warning.
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
+VSRCS_DIR = vsrc
 # BIN = $(OBJ_DIR)/V$(TOPNAME)
 BIN = $(BUILD_DIR)/V$(TOPNAME)
 
@@ -36,8 +37,10 @@ ARGS ?=
 gen: $(VSRCS) 
 	@rm -rf $(OBJ_DIR)
 	@echo "=================== start rtl gen compile ============================"
-	@$(VERILATOR) $(VERILATOR_CFLAGS) \
-		-I$(VSRCS)\
+# @echo "=============================================================="
+# @echo $(VSRCS)
+# @echo "=============================================================="
+	@$(VERILATOR) $(VERILATOR_CFLAGS) -I$(VSRCS_DIR)\
 		--top-module $(TOPNAME) $(VSRCS)  --Mdir $(OBJ_DIR)\
 		$(addprefix -CFLAGS , $(CFLAGS))
 	@echo "=================== start rtl gen finished ==========================="
@@ -60,7 +63,7 @@ gen: $(VSRCS)
 $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	@echo "==================== start rtl sim compile ===================="
-	@+$(VERILATOR) $(VERILATOR_CFLAGS) --build \
+	@+$(VERILATOR) $(VERILATOR_CFLAGS) --exe --build \
 		--top-module $(TOPNAME) $(VSRCS)  $(CSRCS) \
 		--Mdir $(OBJ_DIR)\
 		$(addprefix -CFLAGS , $(CFLAGS))  $(addprefix -LDFLAGS , $(LDFLAGS)) \
