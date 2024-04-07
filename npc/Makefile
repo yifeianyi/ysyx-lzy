@@ -1,12 +1,11 @@
 #顶层模块名
-TOPNAME   =rv_percpu
-INC_PATH := $(abspath $(shell find ./csrc/include -type d -print | grep -v '/\.'))
+TOPNAME   =top
+INC_PATH := $(abspath $(shell find ./csrc/include -type d -print))
 
 #verilator的编译选项
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD -cc  --exe
-VERILATOR_CFLAGS +=	-O3 --x-assign fast --x-initial fast 
-VERILATOR_CFLAGS += --trace --output-split {1}-Wall #--threads {1}
+VERILATOR_CFLAGS += -MMD -cc  --exe 
+VERILATOR_CFLAGS +=	-O3 --x-assign fast --x-initial fast --trace 
 VERILATOR_CFLAGS += -Wno-fatal		# only print lint warning, but not terminate compile.
 VERILATOR_CFLAGS += -Wno-UNUSED 		# close <unused> warning.
 BUILD_DIR = ./build
@@ -30,8 +29,8 @@ CFLAGS += -Wno-write-strings
 LIBS += $(shell llvm-config --libs) 
 LDFLAGS += -lSDL2 -lSDL2_image -lreadline -ldl -pie -fPIE $(LIBS)
 
-IMG ?=
-ARGS ?=
+IMG ?= test/addi.bin
+ARGS ?= 
 
 #后构建verilator编译规则
 gen: $(VSRCS) 
@@ -62,15 +61,12 @@ $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	@echo "==================== start rtl sim compile ===================="
 	@+$(VERILATOR) $(VERILATOR_CFLAGS) --build \
-		--top-module $(TOPNAME) $(VSRCS) $(CSRCS) \
+		--top-module $(TOPNAME) $(VSRCS)  $(CSRCS) \
+		--Mdir $(OBJ_DIR)\
 		$(addprefix -CFLAGS , $(CFLAGS))  $(addprefix -LDFLAGS , $(LDFLAGS)) \
-		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
+		-o $(abspath $(BIN))
 
-nemu:
-	$(MAKE) -C $(NEMU_HOME) ARCH=riscv32-nemu -j
 
-nemu-clean:
-	$(MAKE) -C $(NEMU_HOME) clean
 
 all:
 	@echo "Write this Makefile by your self."
@@ -78,17 +74,22 @@ all:
 sim: $(BIN) 
 	@echo "==================== RTL sim finished ===================="
 	+$(call git_commit, "sim RTL")
-	@./$(BIN) $(ARGS)
+run: sim gentest
+	@./$(BIN) $(ARGS) $(IMG)
+
+runb: sim gentest
+	@./$(BIN) $(ARGS) -b $(IMG)
 
 # ================================= Code line count =======================================
 count:
-	find . -name "*.[cvh]" | xargs wc -l
-
+	find . -path ./build -prune -o \( -name "*.v" -o -name "*.c" -o -name "*.cpp" -o -name "*.hpp" \) -print | xargs wc -l
+	
 countv:
 	find . -name "*.[v]" | xargs wc -l
 
 countc:
-	find . -name "*.[ch]" | xargs wc -l
+	find . -path ./build -prune -o \( -name "*.c" -o -name "*.cpp" -o -name "*.hpp" \) -print | xargs wc -l
+
 
 
 
@@ -100,12 +101,14 @@ gentest: $(TEST).S
 	@$(RV)-ld $(TEST).o -o $(TEST)
 	@$(RV)-objcopy --only-section=.text -O binary $(TEST) $(TEST).bin
 
-	
+
+.PHOYN: clean count countv countc
+.PHOYN: gen sim run runb clean test
+
 
 clean:
 	@rm -rf obj_dir top.vcd
 	@rm -rf $(BUILD_DIR)  obj_dir *.vcd
 	@find test -type f ! -name "*.S" -delete
 
-.PHOYN: gen sim run clean count countv countc test
 include ../Makefile

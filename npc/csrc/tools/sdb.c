@@ -2,9 +2,11 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string>
-
 #define NR_CMD ARRLEN(cmd_table)
 static int is_batch_mode = false;
+
+extern NPCState npc_status;
+
 void init_regex();
 void init_wp_pool();
 
@@ -68,25 +70,25 @@ static int cmd_info(char *args){
 static int cmd_si(char *args){
     uint64_t cnt;
     if (args == NULL) { 
-        // cpu_exec(1); //改为npc_exec
-        return 0;
+      npc_execute(1); //改为npc_exec
+      return 0;
     }
     else if(sscanf(args,"%lu",&cnt) == 1){ 
-      // cpu_exec(cnt);
+      npc_execute(cnt);
     }
     else {
         printf("'%s' must be an integer.\n", args); 
         cmd_help("si");
     }
-
     return 0;
 }
 static int cmd_c(char *args) {
-  // cpu_exec(-1); //改为npc_exec
+  npc_execute(-1);
   return 0;
 }
 static int cmd_q(char *args){
-  return 0;
+  npc_status.state = NPC_QUIT;
+  return -1;
 }
 static int cmd_x(char *args){
   return 0;

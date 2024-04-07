@@ -1,11 +1,14 @@
-#include "common.h"
+#include <common.h>
+
+
+NPCState npc_status = { .state = NPC_STOP };
+
 void init_monitor(int argc, char** argv);
 void engine_start();
 int is_exit_status_bad();
+
 int main(int argc, char** argv) {
 
-  printf("argc:%d \nargv[0]:%s\n",argc,argv[0]);
-  
   init_monitor(argc, argv);
   engine_start();
 
@@ -13,6 +16,16 @@ int main(int argc, char** argv) {
 }
 
 
+
+
+
+
+
+
+
+
 int is_exit_status_bad(){
-  return 0;
+  int good = (npc_status.state == NPC_END && npc_status.halt_ret == 0) ||
+    (npc_status.state == NPC_QUIT);
+  return !good;
 }
