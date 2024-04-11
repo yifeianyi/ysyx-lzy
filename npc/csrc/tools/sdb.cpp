@@ -2,11 +2,12 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string>
+#include <npcState.hpp>
 #define NR_CMD ARRLEN(cmd_table)
 static int is_batch_mode = false;
 
 extern NPCState npc_status;
-
+extern CPU_module percpu;
 void init_regex();
 void init_wp_pool();
 
@@ -57,9 +58,7 @@ static struct {
 static int cmd_info(char *args){
     char *cmd = strtok(args, " ");
     if(strcmp(cmd,"r")==0){
-        // Log("============================================");
-        // isa_reg_display();
-        // Log("============================================");
+        percpu.displayReg();
     }
     else{
         printf("Unknown command '%s'\n", cmd);
@@ -88,6 +87,7 @@ static int cmd_c(char *args) {
 }
 static int cmd_q(char *args){
   npc_status.state = NPC_QUIT;
+  
   return -1;
 }
 static int cmd_x(char *args){
@@ -140,7 +140,10 @@ void engine_start(){
     int i;
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
-        if (cmd_table[i].handler(args) < 0) { return; }
+        if (cmd_table[i].handler(args) < 0) { 
+          Log("NPC quit");
+          return; 
+        }
         break;
       }
     }

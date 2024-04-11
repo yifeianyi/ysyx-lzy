@@ -1,18 +1,19 @@
 #include <common.h>
-
+#include <npcState.hpp>
 
 NPCState npc_status = { .state = NPC_STOP };
 
 void init_monitor(int argc, char** argv);
 void engine_start();
 int is_exit_status_bad();
-
+extern CPU_module percpu;
 int main(int argc, char** argv) {
-
+  // Log("pc:"FMT_PADDR,percpu.getCurPC());
   init_monitor(argc, argv);
   engine_start();
-
-  return is_exit_status_bad();
+  percpu.TraceOff();
+  // return is_exit_status_bad();
+  return 0;
 }
 
 
@@ -25,7 +26,7 @@ int main(int argc, char** argv) {
 
 
 int is_exit_status_bad(){
-  int good = (npc_status.state == NPC_END && npc_status.halt_ret == 0) ||
-    (npc_status.state == NPC_QUIT);
+  int good = (npc_status.state == NPC_QUIT);
+  Log("good:%d",good);
   return !good;
 }

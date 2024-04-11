@@ -16,7 +16,7 @@ module ysyx22041405_MEM#(parameter WIDTH = 32)(
     input                   dm_src_sel,
     input                   dm_re,
     input                   dm_we,
-    input [WIDTH - 1: 0]    dm_mask
+    input [        7: 0]    dm_mask
 );
 
 assign dm_addr = dm_src_sel? alu_result : pc_add4;

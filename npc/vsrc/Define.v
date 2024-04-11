@@ -12,6 +12,24 @@
 `define J_TYPE 7'b0000001
 `define EBREAK 7'b1000000
 
-`define MASK_BYTE 32'h000000ff
-`define MASK_HALF 32'h0000ffff
-`define MASK_WORD 32'hffffffff
+`define MASK_BYTE 8'h01
+`define MASK_HALF 8'h03
+`define MASK_WORD 8'h0f
+`define MASK_ZERO 8'h00
+
+`define IDLE  2'b00 
+`define WAIT  2'b01
+`define STALL 2'b10
+`define STATE_ERROR 2'b11
+
+
+
+
+//pipline width
+`define IF_ID_WIDTH 64
+`define ID_Data_WIDTH 101 //Imm + rf_rs1 + rf_rs2
+`define ID_CTRL_WIDTH 17 // aluCtrl + alu_s2_sel
+`define ID_EX_WIDTH  `ID_Data_WIDTH+`ID_CTRL_WIDTH
+
+
+

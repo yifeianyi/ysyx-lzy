@@ -4,17 +4,29 @@ module ysyx22041405_ALU#(parameter WIDTH = 32)(
     output[WIDTH - 1: 0] result,
 
     //====== ALU Ctrl ======
-    input [        8: 0] alu_Ctrl
+    input [       13: 0] alu_Ctrl
 );
     // select alu_op
-    localparam ALUSHIFT = 3'd7;// 111
-    localparam ALUADDER = 3'd6;// 110
-    localparam ALUSLT   = 3'd5;// 101
-    localparam ALUBGE   = 3'd4;// 100
-    localparam ALUAND   = 3'd3;// 011
-    localparam ALUOR    = 3'd2;// 010
-    localparam ALUXOR   = 3'd1;// 001
-    localparam ALUMOD   = 3'd0;// 000
+    // localparam ALUSHIFT = 3'd7;// 111
+    // localparam ALUADDER = 3'd6;// 110
+    // localparam ALUSLT   = 3'd5;// 101
+    // localparam ALUBGE   = 3'd4;// 100
+    // localparam ALUAND   = 3'd3;// 011
+    // localparam ALUOR    = 3'd2;// 010
+    // localparam ALUXOR   = 3'd1;// 001
+    // localparam ALUMOD   = 3'd0;// 000
+
+    localparam ALUDIV   = 10'b1000000000;
+    localparam ALUMUL   = 10'b0100000000;
+    localparam ALUSHIFT = 10'b0010000000;
+    localparam ALUADDER = 10'b0001000000;
+    localparam ALUSLT   = 10'b0000100000;
+    localparam ALUBGE   = 10'b0000010000;
+    localparam ALUAND   = 10'b0000001000;
+    localparam ALUOR    = 10'b0000000100;
+    localparam ALUXOR   = 10'b0000000010;
+    localparam ALUMOD   = 10'b0000000001;
+    
 
     /*
 
@@ -28,7 +40,7 @@ module ysyx22041405_ALU#(parameter WIDTH = 32)(
     wire                alu_LorR;   // left         or  right
     wire                alu_AorS;   // Adder        or  Suber
     wire                alu_AorL;   // arithmetic   or  logic
-    wire [        4: 0] alu_op;     // [4]div  [3]mul   [2:0]others
+    wire [        9: 0] alu_op;     //
     assign {alu_UorS , alu_LorR , alu_AorS , alu_AorL , alu_op} = alu_Ctrl;
     
 
@@ -132,24 +144,41 @@ module ysyx22041405_ALU#(parameter WIDTH = 32)(
     
 
     reg  [WIDTH - 1: 0] ret_base_d;
-    wire [WIDTH - 1: 0] ret_base;
-    wire [WIDTH - 1: 0] ret_mul;
-    assign ret_base     = ret_base_d;
-    assign ret_mul      = alu_op[3]? alu_mul: ret_base;
-    assign result       = alu_op[4]? alu_div: alu_mul;
+    // wire [WIDTH - 1: 0] ret_base;
+    // wire [WIDTH - 1: 0] ret_mul;
+    // assign ret_base     = ret_base_d;
+    // assign ret_mul      = alu_op[3]? alu_mul: ret_base;
+    // assign result       = alu_op[4]? alu_div: alu_mul;
 
-    always @(alu_op[2:0])begin
-        case (alu_op[2:0])
-        /* 111 */ ALUSHIFT:     ret_base_d = alu_shift;
-        /* 110 */ ALUADDER:     ret_base_d = alu_add;
-        /* 101 */ ALUSLT:       ret_base_d = alu_slt;
-        /* 100 */ ALUBGE:       ret_base_d = alu_bge;
-        /* 011 */ ALUAND:       ret_base_d = alu_and;
-        /* 010 */ ALUOR:        ret_base_d = alu_or;
-        /* 001 */ ALUXOR:       ret_base_d = alu_xor;
-        /* 000 */ ALUMOD:       ret_base_d = alu_mod;
+    // always @(alu_op[2:0])begin
+    //     case (alu_op[2:0])
+    //     /* 111 */ ALUSHIFT:     ret_base_d = alu_shift;
+    //     /* 110 */ ALUADDER:     ret_base_d = alu_add;
+    //     /* 101 */ ALUSLT:       ret_base_d = alu_slt;
+    //     /* 100 */ ALUBGE:       ret_base_d = alu_bge;
+    //     /* 011 */ ALUAND:       ret_base_d = alu_and;
+    //     /* 010 */ ALUOR:        ret_base_d = alu_or;
+    //     /* 001 */ ALUXOR:       ret_base_d = alu_xor;
+    //     /* 000 */ ALUMOD:       ret_base_d = alu_mod;
+    //     endcase
+    // end
+
+    always @(*) begin
+        case(alu_op[9:0])
+            ALUDIV:       ret_base_d = alu_div;
+            ALUMUL:       ret_base_d = alu_mul;
+            ALUSHIFT:     ret_base_d = alu_shift;
+            ALUADDER:     ret_base_d = alu_add;
+            ALUSLT:       ret_base_d = alu_slt;
+            ALUBGE:       ret_base_d = alu_bge;
+            ALUAND:       ret_base_d = alu_and;
+            ALUOR:        ret_base_d = alu_or;
+            ALUXOR:       ret_base_d = alu_xor;
+            ALUMOD:       ret_base_d = alu_mod;
+            default: ret_base_d = 0;
         endcase
     end
+    assign result = ret_base_d;
 
 
 endmodule //ysyx22041405_alu

@@ -1,13 +1,14 @@
 
 #include<common.h>
 #include<getopt.h>
-#include"memory.hpp"
-
+#include"memory.h"
+#include<npcState.hpp>
+extern CPU_module percpu;
 void sdb_set_batch_mode();
 static int parse_args(int argc, char *argv[]);
 // void init_log(const char *log_file);
 static long load_img();
-void init_mem(long img_size);
+void init_mem();
 
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
@@ -16,8 +17,10 @@ static int difftest_port = 1234;
 
 void init_monitor(int argc, char *argv[]){
     parse_args(argc, argv);
-    long img_size = load_img();
-    init_mem(img_size);
+    percpu.TraceOpen();
+    percpu.Reset();
+    
+    init_mem();
 }
 
 static int parse_args(int argc, char *argv[]){
@@ -49,12 +52,14 @@ static int parse_args(int argc, char *argv[]){
   }
   return 0;
 }
-void init_mem(long img_size){
+void init_mem(){
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
+  long img_size = load_img();
   if(img_file!=NULL){
-    init_memory();
+    Log("Load image size is %ld byte.",img_size);
   }
-  Log("Load image size is %ld byte.",img_size);
+  else Log("No image.");
+  
 }
 static long load_img(){
   if (img_file == NULL) {
@@ -67,6 +72,12 @@ static long load_img(){
 
   fseek(fp, 0, SEEK_END);
   long size = ftell(fp);
+
+  fseek(fp, 0, SEEK_SET);
+  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+  assert(ret == 1);
+
+  fclose(fp);
   return size;
 
 }

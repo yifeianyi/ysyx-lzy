@@ -4,14 +4,12 @@ INC_PATH := $(abspath $(shell find ./csrc/include -type d -print))
 
 #verilator的编译选项
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD -cc   
-VERILATOR_CFLAGS +=	-O3 --x-assign fast --x-initial fast --trace 
+VERILATOR_CFLAGS += -MMD -cc  --exe  --trace --build   
 VERILATOR_CFLAGS += -Wno-fatal		# only print lint warning, but not terminate compile.
 VERILATOR_CFLAGS += -Wno-UNUSED 		# close <unused> warning.
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 VSRCS_DIR = vsrc
-# BIN = $(OBJ_DIR)/V$(TOPNAME)
 BIN = $(BUILD_DIR)/V$(TOPNAME)
 
 #默认运行bin
@@ -30,7 +28,7 @@ CFLAGS += -Wno-write-strings
 LIBS += $(shell llvm-config --libs) 
 LDFLAGS += -lSDL2 -lSDL2_image -lreadline -ldl -pie -fPIE $(LIBS)
 
-IMG ?= test/addi.bin
+IMG ?= $(TEST).bin
 ARGS ?= 
 
 #后构建verilator编译规则
@@ -54,29 +52,22 @@ gen: $(VSRCS)
 #		3、make -j -C build/obj_dir -f V$(TOPNAME).mk abspath/V$(TOPNAME) 	
 #
 #####################################################################################
-# $(BIN):  $(OBJ_DIR)
-# # make gen
-# 	@echo "==================== start rtl sim compile ===================="
-# 	make -j -C build/obj_dir -f V$(TOPNAME).mk V$(TOPNAME)  
 
 
 $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	@echo "==================== start rtl sim compile ===================="
-	@+$(VERILATOR) $(VERILATOR_CFLAGS) --exe --build \
-		--top-module $(TOPNAME) $(VSRCS)  $(CSRCS) \
-		--Mdir $(OBJ_DIR)\
-		$(addprefix -CFLAGS , $(CFLAGS))  $(addprefix -LDFLAGS , $(LDFLAGS)) \
-		-o $(abspath $(BIN))
-
-
+	@+$(VERILATOR) $(VERILATOR_CFLAGS) \
+		-top $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 
 all:
 	@echo "Write this Makefile by your self."
 #运行编译好的bin文件
 sim: $(BIN) 
 	@echo "==================== RTL sim finished ===================="
-	+$(call git_commit, "sim RTL")
+# +$(call git_commit, "sim RTL")
 run: sim gentest
 	@./$(BIN) $(ARGS) $(IMG)
 
@@ -103,6 +94,9 @@ gentest: $(TEST).S
 	@$(RV)-as $(TEST).S -o $(TEST).o
 	@$(RV)-ld $(TEST).o -o $(TEST)
 	@$(RV)-objcopy --only-section=.text -O binary $(TEST) $(TEST).bin
+
+wave: runb
+	gtkwave dump.vcd dummy.gtkw
 
 
 .PHOYN: clean count countv countc

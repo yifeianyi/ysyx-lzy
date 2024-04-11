@@ -11,38 +11,44 @@
 // [Additional_Notes_and_Information]
 //
 ////////////////////////////////////////////////////////////////////////////////
-`include "Define.v"
+// import "DPI-C" function void Ebreak();
+import "DPI-C" function void test_addi(input int imm);
+import "DPI-C" function void inst_nsupport();
 module rv_IDU#(parameter WIDTH = 32)(
     /*       input       */
     input   clk,
     input   rst,
-    input [WIDTH - 1: 0] inst,
+    input [`IF_ID_WIDTH - 1: 0] IF_ID_message,
     input [WIDTH - 1: 0] rf_wdata,
+    input [        4: 0] rf_waddr,
 
     /*      output       */
-    output[WIDTH - 1: 0] Imm,
-    output[WIDTH - 1: 0] rf_rs1,
-    output[WIDTH - 1: 0] rf_rs2,
+    output[`ID_Data_WIDTH-1: 0] ID_Data_message,
     
     /*    Ctrl signal    */
+    input                       rf_we,
+    output[`ID_CTRL_WIDTH-1:0] ID_Ctrl_message
     // EXU 
-    output [8:0]          alu_Ctrl,
-    output                alu_s1_sel,
-    output                alu_s2_sel,
-    output [3:0]          branch_sel,
-    output                branch_compare,
+    // output [13:0]          alu_Ctrl,
+    // output                alu_s1_sel
+    // output                alu_s2_sel
+    // output [3:0]          branch_sel,
+    // output                branch_compare,
 
-    // MEM
-    output                dm_src_sel,
-    output [WIDTH - 1: 0] dm_mask,
-    output                dm_re,
-    output                dm_we,
+    // // MEM
+    // output                dm_src_sel,
+    // output [        7: 0] dm_mask,
+    // output                dm_re,
+    // output                dm_we,
 
-    // WBU
-    output                wb_sel,
-    output [WIDTH - 1: 0] wb_mask
+    // // WBU
+    // output                wb_sel,
+    // output [        7: 0] wb_mask
 
 );  
+    wire [31 :0 ]pc;
+    wire [WIDTH - 1: 0] inst;
+    assign {pc, inst} = IF_ID_message;
     localparam R_TYPE = 6'b100000;
     localparam I_TYPE = 6'b010000;
     localparam S_TYPE = 6'b001000;
@@ -86,6 +92,7 @@ module rv_IDU#(parameter WIDTH = 32)(
     wire [30:20]    inst_30_20  = {inst_30_25, inst_24_21, inst_20};
 
     //imm_type
+    wire [WIDTH-1:0]Imm = Imm_d;
     wire [WIDTH-1:0]imm_I;
     wire [WIDTH-1:0]imm_S;
     wire [WIDTH-1:0]imm_B;
@@ -108,22 +115,21 @@ module rv_IDU#(parameter WIDTH = 32)(
             default: Imm_d = {WIDTH{1'b0}};
         endcase
     end
-    assign Imm = Imm_d;
+    
     //=======================     regfile    ==================================
     // outports wire
-    wire            we;
     wire [31:0]     rf_rdata1;
     wire [31:0]     rf_rdata2;
-    assign we = 1'b1;
     ysyx22041405_regfile #(.WIDTH( 32  ))   u_regfile
     (
         .clk        ( clk       ),
+        .rst        ( rst       ),
         .raddr1     ( rs1       ),
         .rdata1     (rf_rdata1  ),
         .raddr2     ( rs2       ),
         .rdata2     ( rf_rdata2 ),
-        .we         ( we        ),
-        .waddr      ( rd        ),
+        .we         ( rf_we     ),
+        .waddr      ( rf_waddr  ),
         .wdata      ( rf_wdata  )
     );
 
@@ -206,28 +212,43 @@ module rv_IDU#(parameter WIDTH = 32)(
     assign inst_jal     = opcode_d[7'b1101111];//
 
     /*      Others       */
-    wire inst_ebreak;
+    wire inst_ebreak, inst_vaild;
     wire load_inst = inst_lbu | inst_lhu | inst_lb | inst_lw |inst_lh;
-    assign inst_ebreak  = inst == 32'b00000000000100000000000001110011;
+    assign inst_ebreak  = (inst == 32'b00000000000100000000000001110011)? 1'b1: 1'b0;
+    assign inst_vaild = (inst_add | inst_sub  | inst_and  | inst_or  | inst_xor | 
+        inst_mul | inst_div| inst_divu| inst_sltu| inst_remu| inst_mulh| inst_mulhu|
+        inst_rem | inst_sll| inst_sra | inst_srl | inst_slt |
+        inst_lbu | inst_lhu  | inst_lb   | inst_lw  | inst_lh  |
+        inst_addi| inst_xori | inst_andi | inst_slli| inst_srli|
+        inst_srai| inst_ori  | inst_sltiu| inst_jalr|inst_sb| inst_sh| inst_sw |
+        inst_beq| inst_bne| inst_bge| inst_bgeu| inst_blt| inst_bltu | inst_lui |inst_auipc | inst_jal | inst_ebreak);
+
+    /*=============== inst test =====================*/
+    always@(posedge clk)begin
+        // if(inst_ebreak ) Ebreak();
+        if(!inst_vaild && inst!=0) inst_nsupport();
+        if(inst_addi)test_addi(Imm);
+        
+    end
+
 
     /***************      Ctrl wire       ***************/
     /*==========  IDU  =========*/
-    wire rf_nwe;
-    assign rf_nwe       = S_type | B_type;
+    wire rf_nwe       = S_type | B_type;
+    wire id_rf_we     = ~rf_nwe;
+
     /*==========  EXU  =========*/
     /*-----  alu  -----*/
-    wire alu_UorS,alu_RorL,alu_AorS,alu_LorA;
-    wire [4: 0] alu_op;
-
-    assign alu_Ctrl     = {alu_UorS , alu_RorL , alu_AorS , alu_LorA , alu_op};
-    assign alu_s1_sel   = R_type | I_type | S_type | B_type | inst_lui;
-    assign alu_s2_sel   = I_type | S_type | U_type;
-    assign alu_UorS     = inst_div | inst_rem | inst_sra | inst_slt | inst_srai | inst_bge | inst_blt;
-    assign alu_RorL     = inst_sll | inst_slli;
-    assign alu_AorS     = inst_sub | inst_beq | inst_bne;
-    assign alu_LorA     = inst_sra | inst_srai;
+    // wire [4: 0] alu_op;
+    wire [13:0] alu_Ctrl     = {alu_UorS, alu_RorL, alu_AorS, alu_LorA, alu_opcode};
+    // assign alu_s1_sel   = R_type | I_type | S_type | B_type | inst_lui;
+    wire alu_s2_sel   = I_type | S_type | U_type;
+    wire alu_UorS     = inst_div | inst_rem | inst_sra | inst_slt | inst_srai | inst_bge | inst_blt;
+    wire alu_RorL     = inst_sll | inst_slli;
+    wire alu_AorS     = inst_sub | inst_beq | inst_bne;
+    wire alu_LorA     = inst_sra | inst_srai;
     /*-------------*/
-    wire [7:0] alu_opcode = {alu_shift, alu_add, alu_slt, alu_bge, alu_and, alu_or, alu_xor, alu_mod};
+    wire [9:0] alu_opcode = {alu_div, alu_mul, alu_shift, alu_add, alu_slt, alu_bge, alu_and, alu_or, alu_xor, alu_mod};
     wire alu_shift  =   inst_sll | inst_sra | inst_srl |
                         inst_slli| inst_srai| inst_srli;
 
@@ -242,53 +263,54 @@ module rv_IDU#(parameter WIDTH = 32)(
     wire alu_mul    =   inst_mul | inst_mulh | inst_mulhu;
     wire alu_div    =   inst_div | inst_divu;
 
-    assign alu_op[4:3] = {alu_div,alu_mul};
-    ysyx22041405_encoder_n_m #(.n(8),.m(3)) encoder8_3(
-        .in(alu_opcode),
-        .out(alu_op[2:0])
-    );
-
-
-
-    /*---  branch  ---*/
-    wire nextpc_src_sel, branch_src_sel, branch_condit, branch_nseq;
-    assign branch_sel     = {nextpc_src_sel, branch_src_sel, branch_condit, branch_nseq};
-    assign nextpc_src_sel = inst_jalr;
-    assign branch_src_sel = inst_jalr;
-    assign branch_condit  = B_type;
-    assign branch_nseq    = inst_jalr | inst_jal;
-    assign branch_compare = inst_bne;
-
-    /*==========  MEM  =========*/
-    assign dm_src_sel     = inst_jalr | inst_jal;;
-    assign dm_mask        = dm_mask_r; 
-    assign dm_re          = load_inst;
-    assign dm_we          = S_type;
-
-    /*==========  WBU  =========*/
-    assign wb_sel         = load_inst;
-    assign wb_mask        = wb_mask_r; 
-
-    reg [WIDTH - 1:0] dm_mask_r;
-    reg [WIDTH - 1:0] wb_mask_r;
     
-    always @(*) begin
-        case (funct3[1:0])
-            2'b00:begin
-                wb_mask_r = `MASK_BYTE;
-                dm_mask_r = `MASK_BYTE;
-            end
-            2'b01:begin
-                wb_mask_r = `MASK_HALF;
-                dm_mask_r = `MASK_HALF;
-            end
-            2'b10:begin
-                wb_mask_r = `MASK_WORD;
-                dm_mask_r = `MASK_WORD;
-            end
-            default: wb_mask_r= 32'b0;
-        endcase
-    end
+    // assign alu_op[4:3] = {alu_div,alu_mul};
+    // ysyx22041405_encoder_n_m #(.n(8),.m(3)) encoder8_3(
+    //     .in(alu_opcode),
+    //     .out(alu_op[2:0])
+    // );
+
+
+
+    // /*---  branch  ---*/
+    // wire nextpc_src_sel, branch_src_sel, branch_condit, branch_nseq;
+    // assign branch_sel     = {nextpc_src_sel, branch_src_sel, branch_condit, branch_nseq};
+    // assign nextpc_src_sel = inst_jalr;
+    // assign branch_src_sel = inst_jalr;
+    // assign branch_condit  = B_type;
+    // assign branch_nseq    = inst_jalr | inst_jal;
+    // assign branch_compare = inst_bne;
+
+    // /*==========  MEM  =========*/
+    // assign dm_src_sel     = inst_jalr | inst_jal;;
+    // assign dm_mask        = dm_mask_r; 
+    // assign dm_re          = load_inst;
+    // assign dm_we          = S_type;
+
+    // /*==========  WBU  =========*/
+    // assign wb_sel         = load_inst;
+    // assign wb_mask        = wb_mask_r; 
+
+    // reg [        7: 0] dm_mask_r;
+    // reg [        7: 0] wb_mask_r;
+    
+    // always @(*) begin
+    //     case (funct3[1:0])
+    //         2'b00:begin
+    //             wb_mask_r = `MASK_BYTE;
+    //             dm_mask_r = `MASK_BYTE;
+    //         end
+    //         2'b01:begin
+    //             wb_mask_r = `MASK_HALF;
+    //             dm_mask_r = `MASK_HALF;
+    //         end
+    //         2'b10:begin
+    //             wb_mask_r = `MASK_WORD;
+    //             dm_mask_r = `MASK_WORD;
+    //         end
+    //         default: wb_mask_r= `MASK_ZERO;
+    //     endcase
+    // end
 
 
 
@@ -296,6 +318,7 @@ module rv_IDU#(parameter WIDTH = 32)(
     /*
         valid-ready state: TODO
     */
-
+    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, rd};
+    assign ID_Ctrl_message = {alu_Ctrl, alu_s2_sel, id_rf_we,inst_ebreak};
 
 endmodule //rv_IDU

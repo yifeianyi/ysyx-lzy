@@ -4,6 +4,7 @@
 // Base standard library
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
 #include <macro.h>
@@ -19,26 +20,11 @@ typedef uint32_t paddr_t;
 #define FMT_PADDR "0x%08x"
 typedef uint16_t ioaddr_t;
 
-//Verilator
-#include "Vtop.h"
-#include <verilated.h>
-#include <verilated_vcd_c.h>    
-
-// DPI-C
-#include <svdpi.h>
-#include <Vtop__Dpi.h>
-#include <verilated_dpi.h>
-
 
 // save cpu RTL state
 /*
     用于获取RTL的相关信息，用于 difftest 和 维护整个npc的状态机。
 */
-typedef struct {
-  word_t gpr[32];
-  vaddr_t pc;
-  word_t csr[32];  //csr[0] == mtvec csr[1] == mepc csr[2] == mstatus csr[3] == mcause
-} CPU_state;
 
 enum { NPC_RUNNING, NPC_STOP, NPC_END, NPC_ABORT, NPC_QUIT };
 typedef struct {
