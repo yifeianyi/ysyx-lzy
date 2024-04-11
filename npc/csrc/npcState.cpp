@@ -1,7 +1,7 @@
 #include<npcState.hpp>
 extern NPCState npc_status;
 extern CPU_module percpu;
-word_t *gpr = NULL;
+word_t *GPR = NULL;
 static const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
   "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -67,16 +67,11 @@ paddr_t CPU_module::getCurPC(){
 }
 
 //-------------------- cpu_state --------------------
-void CPU_module::updateCPUstate(){
-    for(int i = 0;i<32;i++){
-        cpu.gpr[i] = gpr[i];
-    }
-}
 void CPU_module::displayReg(){
     printf("pc:"FMT_PADDR"\n",getCurPC());
     for(int i=0;i<32;i++){
         if(i%4==0 && i!=0)printf("\n");
-          printf("%3s:" FMT_PADDR " \t\t",regs[i], cpu.gpr[i]);
+          printf("%3s:" FMT_PADDR " \t\t",regs[i], GPR[i]);
     }
     printf("\n");
 }
@@ -99,6 +94,6 @@ extern "C"{
 }
 extern "C"{
     void fetch_regfile_data(const svOpenArrayHandle reg){
-        gpr = (uint32_t *)(((VerilatedDpiOpenVar*)reg)->datap());
+        GPR = (uint32_t *)(((VerilatedDpiOpenVar*)reg)->datap());
     }
 }

@@ -26,7 +26,7 @@ always @(posedge clk) begin
     else if(we && waddr != 0)rf[waddr] <= wdata;
 end
 
-import "DPI-C" function void fetch_regfile_data(output logic [WIDTH-1:0] regfile_data[]);
+import "DPI-C" function void fetch_regfile_data(input logic [WIDTH-1:0] regfile_data[]);
 initial fetch_regfile_data(rf); 
 //READ OUT 
 assign rdata1 = (raddr1==5'b0) ? {WIDTH{1'b0}} : rf[raddr1];

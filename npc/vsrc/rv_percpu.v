@@ -96,7 +96,7 @@ ysyx22041405_IDU #(
     .rst    	    ( rst     ),
     .IF_ID_message  (IF_ID_message),
     .rf_wdata       ( rf_wdata),
-    .rf_waddr       ( ex_rf_waddr),
+    .rf_waddr       ( ex_rf_waddr),  
 
     /*      output       */
     .ID_Data_message (ID_Data_message),
