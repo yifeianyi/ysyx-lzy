@@ -63,7 +63,7 @@ word_t CPU_module::getCurInst(){
     return top->debug_inst;
 }
 paddr_t CPU_module::getCurPC(){
-    return top->pc;
+    return top->debug_pc;
 }
 
 //-------------------- cpu_state --------------------
@@ -86,6 +86,7 @@ extern "C"{
         Log("In addi test.");
         printf("Imm: "FMT_WORD"\n",imm);
     }
+
     void inst_nsupport(){
         Log("This instruction is not support");
         // printf("",percpu.getCurInst());

@@ -11,7 +11,6 @@
 // [Additional_Notes_and_Information]
 //
 ////////////////////////////////////////////////////////////////////////////////
-// import "DPI-C" function void Ebreak();
 import "DPI-C" function void test_addi(input int imm);
 import "DPI-C" function void inst_nsupport();
 module rv_IDU#(parameter WIDTH = 32)(
@@ -29,9 +28,6 @@ module rv_IDU#(parameter WIDTH = 32)(
     input                       rf_we,
     output[`ID_CTRL_WIDTH-1:0] ID_Ctrl_message
     // EXU 
-    // output [13:0]          alu_Ctrl,
-    // output                alu_s1_sel
-    // output                alu_s2_sel
     // output [3:0]          branch_sel,
     // output                branch_compare,
 
@@ -49,6 +45,9 @@ module rv_IDU#(parameter WIDTH = 32)(
     wire [31 :0 ]pc;
     wire [WIDTH - 1: 0] inst;
     assign {pc, inst} = IF_ID_message;
+    wire [WIDTH - 1: 0] pc_add4 = pc + 4;
+
+    //=======================================================================
     localparam R_TYPE = 6'b100000;
     localparam I_TYPE = 6'b010000;
     localparam S_TYPE = 6'b001000;
@@ -135,55 +134,46 @@ module rv_IDU#(parameter WIDTH = 32)(
 
     //=======================  Decoder  ==================================
     /*    R-Type    */
-    wire inst_add , inst_sub  , inst_and  , inst_or  , inst_xor , 
-         inst_mul , inst_div  , inst_divu , inst_sltu, inst_remu,
-         inst_mulh, inst_mulhu, inst_rem  , inst_sll , inst_sra ,
-         inst_srl , inst_slt;
+    wire inst_add = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0000000];//
+    wire inst_sub = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0100000];//
+    wire inst_and = opcode_d[7'b0110011] & funct3_d[3'b111] & funct7_d[7'b0000000];//
+    wire inst_or  = opcode_d[7'b0110011] & funct3_d[3'b110] & funct7_d[7'b0000000];//
+    wire inst_xor = opcode_d[7'b0110011] & funct3_d[3'b100] & funct7_d[7'b0000000];//
 
-    assign inst_add = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0000000];//
-    assign inst_sub = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0100000];//
-    assign inst_and = opcode_d[7'b0110011] & funct3_d[3'b111] & funct7_d[7'b0000000];//
-    assign inst_or  = opcode_d[7'b0110011] & funct3_d[3'b110] & funct7_d[7'b0000000];//
-    assign inst_xor = opcode_d[7'b0110011] & funct3_d[3'b100] & funct7_d[7'b0000000];//
-
-    assign inst_mul = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0000001];//
-    assign inst_div = opcode_d[7'b0110011] & funct3_d[3'b100] & funct7_d[7'b0000001];//
-    assign inst_divu= opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0000001];//
-    assign inst_sltu= opcode_d[7'b0110011] & funct3_d[3'b011] & funct7_d[7'b0000000];//
-    assign inst_remu= opcode_d[7'b0110011] & funct3_d[3'b111] & funct7_d[7'b0000001];//
+    wire inst_mul = opcode_d[7'b0110011] & funct3_d[3'b000] & funct7_d[7'b0000001];//
+    wire inst_div = opcode_d[7'b0110011] & funct3_d[3'b100] & funct7_d[7'b0000001];//
+    wire inst_divu= opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0000001];//
+    wire inst_sltu= opcode_d[7'b0110011] & funct3_d[3'b011] & funct7_d[7'b0000000];//
+    wire inst_remu= opcode_d[7'b0110011] & funct3_d[3'b111] & funct7_d[7'b0000001];//
     
-    assign inst_mulh =opcode_d[7'b0110011] & funct3_d[3'b001] & funct7_d[7'b0000001];//
-    assign inst_mulhu=opcode_d[7'b0110011] & funct3_d[3'b011] & funct7_d[7'b0000001];//
-    assign inst_rem  =opcode_d[7'b0110011] & funct3_d[3'b110] & funct7_d[7'b0000001];//
-    assign inst_sll  =opcode_d[7'b0110011] & funct3_d[3'b001] & funct7_d[7'b0000000];//
-    assign inst_sra  =opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0100000];//
+    wire inst_mulh =opcode_d[7'b0110011] & funct3_d[3'b001] & funct7_d[7'b0000001];//
+    wire inst_mulhu=opcode_d[7'b0110011] & funct3_d[3'b011] & funct7_d[7'b0000001];//
+    wire inst_rem  =opcode_d[7'b0110011] & funct3_d[3'b110] & funct7_d[7'b0000001];//
+    wire inst_sll  =opcode_d[7'b0110011] & funct3_d[3'b001] & funct7_d[7'b0000000];//
+    wire inst_sra  =opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0100000];//
 
-    assign inst_srl  =opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0000000];//
-    assign inst_slt  =opcode_d[7'b0110011] & funct3_d[3'b010] & funct7_d[7'b0000000];//
+    wire inst_srl  =opcode_d[7'b0110011] & funct3_d[3'b101] & funct7_d[7'b0000000];//
+    wire inst_slt  =opcode_d[7'b0110011] & funct3_d[3'b010] & funct7_d[7'b0000000];//
 
 
 
     /*    I-Type    */
-    wire inst_lbu , inst_lhu  , inst_lb   , inst_lw  , inst_lh  ,
-         inst_addi, inst_xori , inst_andi , inst_slli, inst_srli,
-         inst_srai, inst_ori  , inst_sltiu, inst_jalr;
+    wire inst_lbu     = opcode_d[7'b0000011] & funct3_d[3'b100];//
+    wire inst_lhu     = opcode_d[7'b0000011] & funct3_d[3'b101];//
+    wire inst_lb      = opcode_d[7'b0000011] & funct3_d[3'b000];//
+    wire inst_lw      = opcode_d[7'b0000011] & funct3_d[3'b001];//
+    wire inst_lh      = opcode_d[7'b0000011] & funct3_d[3'b010];//
 
-    assign inst_lbu     = opcode_d[7'b0000011] & funct3_d[3'b100];//
-    assign inst_lhu     = opcode_d[7'b0000011] & funct3_d[3'b101];//
-    assign inst_lb      = opcode_d[7'b0000011] & funct3_d[3'b000];//
-    assign inst_lw      = opcode_d[7'b0000011] & funct3_d[3'b001];//
-    assign inst_lh      = opcode_d[7'b0000011] & funct3_d[3'b010];//
-
-    assign inst_addi    = opcode_d[7'b0010011] & funct3_d[3'b000];//
-    assign inst_xori    = opcode_d[7'b0010011] & funct3_d[3'b100];//
-    assign inst_andi    = opcode_d[7'b0010011] & funct3_d[3'b111];//
-    assign inst_slli    = opcode_d[7'b0010011] & funct3_d[3'b001] & ( funct7_d[7'b0000000] | funct7_d[7'b0000001]);//
-    assign inst_srli    = opcode_d[7'b0010011] & funct3_d[3'b101] & ( funct7_d[7'b0000000] | funct7_d[7'b0000001]);//
+    wire inst_addi    = opcode_d[7'b0010011] & funct3_d[3'b000];//
+    wire inst_xori    = opcode_d[7'b0010011] & funct3_d[3'b100];//
+    wire inst_andi    = opcode_d[7'b0010011] & funct3_d[3'b111];//
+    wire inst_slli    = opcode_d[7'b0010011] & funct3_d[3'b001] & ( funct7_d[7'b0000000] | funct7_d[7'b0000001]);//
+    wire inst_srli    = opcode_d[7'b0010011] & funct3_d[3'b101] & ( funct7_d[7'b0000000] | funct7_d[7'b0000001]);//
     
-    assign inst_srai    = opcode_d[7'b0010011] & funct3_d[3'b101] & ( funct7_d[7'b0100000] | funct7_d[7'b0100001]);//
-    assign inst_ori     = opcode_d[7'b0010011] & funct3_d[3'b110];//
-    assign inst_sltiu   = opcode_d[7'b0010011] & funct3_d[3'b011];//
-    assign inst_jalr    = opcode_d[7'b1100111] & funct3_d[3'b000];//
+    wire inst_srai    = opcode_d[7'b0010011] & funct3_d[3'b101] & ( funct7_d[7'b0100000] | funct7_d[7'b0100001]);//
+    wire inst_ori     = opcode_d[7'b0010011] & funct3_d[3'b110];//
+    wire inst_sltiu   = opcode_d[7'b0010011] & funct3_d[3'b011];//
+    wire inst_jalr    = opcode_d[7'b1100111] & funct3_d[3'b000];//
 
 
     /*    S-Type    */
@@ -193,29 +183,27 @@ module rv_IDU#(parameter WIDTH = 32)(
     assign inst_sw      = opcode_d[7'b0100011] & funct3_d[3'b010];//
 
     /*    B-Type    */
-    wire inst_beq, inst_bne, inst_bge, inst_bgeu, inst_blt, inst_bltu;
-    assign inst_beq     = opcode_d[7'b1100011] & funct3_d[3'b000];//
-    assign inst_bne     = opcode_d[7'b1100011] & funct3_d[3'b001];//
-    assign inst_bge     = opcode_d[7'b1100011] & funct3_d[3'b101];//
-    assign inst_bgeu    = opcode_d[7'b1100011] & funct3_d[3'b111];//
-    assign inst_blt     = opcode_d[7'b1100011] & funct3_d[3'b100];//
-    assign inst_bltu    = opcode_d[7'b1100011] & funct3_d[3'b110];//
+    wire inst_beq     = opcode_d[7'b1100011] & funct3_d[3'b000];//
+    wire inst_bne     = opcode_d[7'b1100011] & funct3_d[3'b001];//
+    wire inst_bge     = opcode_d[7'b1100011] & funct3_d[3'b101];//
+    wire inst_bgeu    = opcode_d[7'b1100011] & funct3_d[3'b111];//
+    wire inst_blt     = opcode_d[7'b1100011] & funct3_d[3'b100];//
+    wire inst_bltu    = opcode_d[7'b1100011] & funct3_d[3'b110];//
 
     /*    U-Type    */
-    wire inst_lui;    
-    wire inst_auipc;
-    assign inst_auipc   = opcode_d[7'b0010111];//
-    assign inst_lui     = opcode_d[7'b0110111];//
+    wire inst_auipc   = opcode_d[7'b0010111];//
+    wire inst_lui     = opcode_d[7'b0110111];//
 
     /*    J-Type    */
-    wire inst_jal;
-    assign inst_jal     = opcode_d[7'b1101111];//
+    wire inst_jal     = opcode_d[7'b1101111];//
 
     /*      Others       */
     wire inst_ebreak, inst_vaild;
-    wire load_inst = inst_lbu | inst_lhu | inst_lb | inst_lw |inst_lh;
-    assign inst_ebreak  = (inst == 32'b00000000000100000000000001110011)? 1'b1: 1'b0;
-    assign inst_vaild = (inst_add | inst_sub  | inst_and  | inst_or  | inst_xor | 
+
+    wire inst_LOAD = inst_lbu | inst_lhu | inst_lb | inst_lw |inst_lh;
+    wire inst_JUMP = inst_jalr | J_type;
+    wire inst_ebreak  = (inst == 32'b00000000000100000000000001110011)? 1'b1: 1'b0;
+    wire inst_vaild = (inst_add | inst_sub  | inst_and  | inst_or  | inst_xor | 
         inst_mul | inst_div| inst_divu| inst_sltu| inst_remu| inst_mulh| inst_mulhu|
         inst_rem | inst_sll| inst_sra | inst_srl | inst_slt |
         inst_lbu | inst_lhu  | inst_lb   | inst_lw  | inst_lh  |
@@ -241,7 +229,7 @@ module rv_IDU#(parameter WIDTH = 32)(
     /*-----  alu  -----*/
     // wire [4: 0] alu_op;
     wire [13:0] alu_Ctrl     = {alu_UorS, alu_RorL, alu_AorS, alu_LorA, alu_opcode};
-    // assign alu_s1_sel   = R_type | I_type | S_type | B_type | inst_lui;
+    wire alu_s1_sel   = U_type | J_type;
     wire alu_s2_sel   = I_type | S_type | U_type;
     wire alu_UorS     = inst_div | inst_rem | inst_sra | inst_slt | inst_srai | inst_bge | inst_blt;
     wire alu_RorL     = inst_sll | inst_slli;
@@ -318,7 +306,7 @@ module rv_IDU#(parameter WIDTH = 32)(
     /*
         valid-ready state: TODO
     */
-    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, rd};
-    assign ID_Ctrl_message = {alu_Ctrl, alu_s2_sel, id_rf_we,inst_ebreak};
+    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, rd , IF_ID_message};
+    assign ID_Ctrl_message = {alu_Ctrl, alu_s1_sel, alu_s2_sel, id_rf_we,inst_ebreak, inst_lui, inst_vaild};
 
 endmodule //rv_IDU

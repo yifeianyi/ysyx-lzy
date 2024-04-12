@@ -3,7 +3,7 @@ module top #(parameter WIDTH = 32)(
     input                   rst,  
 
     //debug
-    output  [WIDTH - 1: 0]  pc,
+    output  [WIDTH - 1: 0]  debug_pc,
     output  [WIDTH - 1: 0]  debug_inst
 );  
     // reg [WIDTH - 1: 0] pc_r;
@@ -16,7 +16,7 @@ module top #(parameter WIDTH = 32)(
     rv_percpu cpu(
         .clk        (clk),
         .rst        (rst),
-        .pc         (pc),
-        .debug_inst (debug_inst)
+        .debug_pc   (debug_pc   ),
+        .debug_inst (debug_inst )
     );
 endmodule

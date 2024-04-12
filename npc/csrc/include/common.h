@@ -82,6 +82,6 @@ do { \
 
 #define TODO() panic("please implement me")
 
-void npc_execute(uint64_t n);
+
 uint64_t get_time();
 #endif

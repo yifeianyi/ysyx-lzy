@@ -1,23 +1,35 @@
 #include "common.h"
 #include <npcState.hpp>
+// #include <string>
 extern NPCState npc_status;
 CPU_module percpu;
+bool Inst_finished = false;
+extern "C"  void inst_finished(){
+        Inst_finished = true;
+}
 
-static void execute(uint64_t n){
+static void execClock(uint64_t n){
     for(int i=0;i<n;i++){
-        Log("Cur_pc  :"FMT_WORD,percpu.getCurPC());
         // Log("inst:"FMT_PADDR,percpu.getCurInst());
         percpu.stepAndWave();
         if(npc_status.state == NPC_ABORT || npc_status.state == NPC_END){
             npc_status.halt_pc = percpu.getCurPC();
             break;
         }
-            
-        // percpu.updateCPUstate();
-        // percpu.displayReg();
+        Log("Cur_pc  :"FMT_WORD,percpu.getCurPC());
     }
 }
-void npc_execute(uint64_t n){
+
+static void execInst(uint64_t n){
+    for(int i=0;i<n;i++){
+        while(!Inst_finished){
+            execClock(n);
+        }
+        Inst_finished = false;
+    }
+}
+
+void npc_execute(uint64_t n,std::string arg){
     switch (npc_status.state)
     {
     case NPC_END: case NPC_ABORT: 
@@ -29,7 +41,12 @@ void npc_execute(uint64_t n){
         npc_status.state = NPC_RUNNING;
         break;
     }
-    execute(n);
+    if(arg == "sc")
+        execClock(n);
+    else if(arg == "si")
+        execInst(n);
+    else Assert(0,"npc-exec error.");
+
     switch (npc_status.state)
     {
     case NPC_RUNNING: npc_status.state = NPC_STOP;break;
@@ -46,6 +63,3 @@ void npc_execute(uint64_t n){
     }
     
 }
-
-
-

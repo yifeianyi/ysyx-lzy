@@ -95,7 +95,7 @@ gentest: $(TEST).S
 	@$(RV)-ld $(TEST).o -o $(TEST)
 	@$(RV)-objcopy --only-section=.text -O binary $(TEST) $(TEST).bin
 
-wave: runb
+wave: run
 	gtkwave dump.vcd dummy.gtkw
 
 

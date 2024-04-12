@@ -13,9 +13,6 @@ module ysyx22041405_IDU #(parameter WIDTH = 32)(
     input                       rf_we,
     output[`ID_CTRL_WIDTH-1: 0] ID_Ctrl_message
     // EXU 
-    // output [13:0]          alu_Ctrl,
-    // output                alu_s1_sel
-    // output                alu_s2_sel
     // output [3:0]          branch_sel,
     // output                branch_compare,
 

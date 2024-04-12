@@ -5,6 +5,7 @@
 #include <npcState.hpp>
 #define NR_CMD ARRLEN(cmd_table)
 static int is_batch_mode = false;
+void npc_execute(uint64_t n,std::string arg);
 
 extern NPCState npc_status;
 extern CPU_module percpu;
@@ -36,6 +37,7 @@ static int cmd_help(char *args);
 static int cmd_c(char *args);
 static int cmd_q(char *args);
 static int cmd_si(char *args);
+static int cmd_sc(char *args);
 static int cmd_info(char *args);
 static int cmd_x(char *args);
 
@@ -48,6 +50,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", " step one instruction", cmd_si},
+  { "sc", " step one Clock", cmd_sc},
   { "info", "print regfiles ", cmd_info},
   { "x", "print segment memory", cmd_x}
   // { "sc", " step one clock." NULL}
@@ -69,11 +72,11 @@ static int cmd_info(char *args){
 static int cmd_si(char *args){
     uint64_t cnt;
     if (args == NULL) { 
-      npc_execute(1); //改为npc_exec
+      npc_execute(1,"si"); //改为npc_exec
       return 0;
     }
     else if(sscanf(args,"%lu",&cnt) == 1){ 
-      npc_execute(cnt);
+      npc_execute(cnt,"si");
     }
     else {
         printf("'%s' must be an integer.\n", args); 
@@ -81,8 +84,23 @@ static int cmd_si(char *args){
     }
     return 0;
 }
+static int cmd_sc(char *args){
+    uint64_t cnt;
+    if (args == NULL) { 
+      npc_execute(1,"sc"); //改为npc_exec
+      return 0;
+    }
+    else if(sscanf(args,"%lu",&cnt) == 1){ 
+      npc_execute(cnt,"sc");
+    }
+    else {
+        printf("'%s' must be an integer.\n", args); 
+        cmd_help("sc");
+    }
+    return 0;
+}
 static int cmd_c(char *args) {
-  npc_execute(-1);
+  npc_execute(-1,"si");
   return 0;
 }
 static int cmd_q(char *args){

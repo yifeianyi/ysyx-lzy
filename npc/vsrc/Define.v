@@ -27,8 +27,8 @@
 
 //pipline width
 `define IF_ID_WIDTH 64
-`define ID_Data_WIDTH 101 //Imm + rf_rs1 + rf_rs2
-`define ID_CTRL_WIDTH 17 // aluCtrl + alu_s2_sel
+`define ID_Data_WIDTH 101+`IF_ID_WIDTH //Imm + rf_rs1 + rf_rs2
+`define ID_CTRL_WIDTH 20 // aluCtrl + alu_s2_sel
 `define ID_EX_WIDTH  `ID_Data_WIDTH+`ID_CTRL_WIDTH
 
 

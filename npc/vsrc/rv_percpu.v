@@ -3,12 +3,10 @@ module rv_percpu#(parameter WIDTH = 32)(
     input                   rst,  
 
     //debug
-    output  [WIDTH - 1: 0]  pc,
+    output  [WIDTH - 1: 0]  debug_pc,
     output  [WIDTH - 1: 0]  debug_inst
 );
 /*----------------------------- IFU -------------------------------------------*/
-assign debug_inst = IF_ID_message[31:0];
-assign pc = IF_pc;
 /* verilator lint_off UNOPTFLAT */
 wire [WIDTH-1:0] 	IF_inst;
 wire [     31:0]    IF_pc;
@@ -107,9 +105,6 @@ ysyx22041405_IDU #(
     .ID_Ctrl_message( ID_Ctrl_message)
 
     //EXU
-    // .alu_Ctrl       ( alu_Ctrl),
-    // .alu_s1_sel (alu_s1_sel)
-    // .alu_s2_sel     (alu_s2_sel)
     // .branch_sel (branch_sel),
     // .branch_compare (branch_compare),
 
@@ -150,14 +145,13 @@ ysyx22041405_EXU #(
     .rst        (   rst     ),
 
     /*       input       */
-    .pc         (   pc      ),
     .ID_EX_message(ID_EX_message),
 
     /*      output       */
     
     .ex_rf_waddr(ex_rf_waddr),
     .ex_rf_we   (ex_rf_we   ),
-    .alu_result ( alu_result)
+    .alu_result ( alu_result),
     // .pc_add4    ( pc_add4   ),
     // .next_pc    ( next_pc   ),
 
@@ -167,6 +161,11 @@ ysyx22041405_EXU #(
     // .alu_s2_sel ( alu_s2_sel    )
     // .branch_sel ( branch_sel    ),
     // .branch_compare(branch_compare)
+
+    /*    Debug     */
+    .debug_inst ( debug_inst  ),
+    .debug_pc   ( debug_pc    )
+
 );
 assign rf_wdata = alu_result;
 
