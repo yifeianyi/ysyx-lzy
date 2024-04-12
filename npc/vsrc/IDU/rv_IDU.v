@@ -12,7 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 import "DPI-C" function void test_addi(input int imm);
-import "DPI-C" function void inst_nsupport();
 module rv_IDU#(parameter WIDTH = 32)(
     /*       input       */
     input   clk,
@@ -214,7 +213,7 @@ module rv_IDU#(parameter WIDTH = 32)(
     /*=============== inst test =====================*/
     always@(posedge clk)begin
         // if(inst_ebreak ) Ebreak();
-        if(!inst_vaild && inst!=0) inst_nsupport();
+        // if(!inst_vaild && inst!=0) inst_nsupport();
         if(inst_addi)test_addi(Imm);
         
     end

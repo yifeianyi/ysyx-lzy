@@ -21,11 +21,13 @@ static void execClock(uint64_t n){
 }
 
 static void execInst(uint64_t n){
+    Log("si n(n=%ld)",n);
     for(int i=0;i<n;i++){
         while(!Inst_finished){
-            execClock(n);
+            execClock(1);
         }
         Inst_finished = false;
+        if(npc_status.state == NPC_END || npc_status.state == NPC_ABORT)break;
     }
 }
 
@@ -37,15 +39,17 @@ void npc_execute(uint64_t n,std::string arg){
         printf("Program execution has ended. To restart the program, exit NPC and run again.\n");
         return;
     default:
-
         npc_status.state = NPC_RUNNING;
         break;
     }
+
+    //-----------------
     if(arg == "sc")
         execClock(n);
     else if(arg == "si")
         execInst(n);
     else Assert(0,"npc-exec error.");
+
 
     switch (npc_status.state)
     {

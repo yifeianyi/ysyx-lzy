@@ -42,9 +42,11 @@ module ysyx22041405_EXU#(parameter WIDTH = 32)(
 
 
     import "DPI-C" function void inst_finished();
+    import "DPI-C" function void inst_nsupport();
     always @(*) begin
         if(inst_ebreak)Ebreak();
         if(inst_vaild && inst!=0) inst_finished();
+        else if(!inst_vaild && inst !=0)inst_nsupport();
     end
 
     //---------过渡方案---------
