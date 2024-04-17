@@ -40,6 +40,8 @@ static int cmd_si(char *args);
 static int cmd_sc(char *args);
 static int cmd_info(char *args);
 static int cmd_x(char *args);
+static int cmd_itrace(char *args);
+static int cmd_mtrace(char *args);
 
 static struct {
   const char *name;
@@ -52,11 +54,37 @@ static struct {
   { "si", " step one instruction", cmd_si},
   { "sc", " step one Clock", cmd_sc},
   { "info", "print regfiles ", cmd_info},
-  { "x", "print segment memory", cmd_x}
+  { "x", "print segment memory", cmd_x},
+  {"itrace", "Turn ON or turn off the instruction trace.",cmd_itrace},
+  {"mtrace", "Turn ON or turn off the memory trace.",cmd_mtrace},
   // { "sc", " step one clock." NULL}
 };
 
 
+static int cmd_itrace(char *args){
+  if(args == NULL || strcmp(args, "o") == 0){
+    percpu.itraceTurn = true;
+    printf(ASNI_FMT("itrace: ON",ASNI_FG_GREEN));
+    return 0;
+  }
+  if(strcmp(args, "c")){
+    printf(ASNI_FMT("itrace: OFF",ASNI_FG_RED));
+    percpu.itraceTurn = false;
+    return 0;
+  }
+}
+static int cmd_mtrace(char *args){
+  if(args == NULL || strcmp(args, "o") == 0){
+    percpu.mtraceTurn = true;
+    printf(ASNI_FMT("mtrace: ON",ASNI_FG_GREEN));
+    return 0;
+  }
+  if(strcmp(args, "c")){
+    percpu.mtraceTurn = false;
+    printf(ASNI_FMT("mtrace: OFF",ASNI_FG_RED));
+    return 0;
+  }
+}
 
 static int cmd_info(char *args){
     char *cmd = strtok(args, " ");

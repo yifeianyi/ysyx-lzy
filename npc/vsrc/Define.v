@@ -48,8 +48,8 @@
 
 
 
-import "DPI-C" function void pmem_read(input int raddr, output int rdata);
-import "DPI-C" function void pmem_write(input int waddr, input int wdata, input byte mask);
+import "DPI-C" function void pmem_read(input  int raddr, output  int rdata);
+import "DPI-C" function void pmem_write(input  int waddr, input  int wdata, input byte mask);
 
 import "DPI-C" function void inst_finished();
 import "DPI-C" function void inst_nsupport();
