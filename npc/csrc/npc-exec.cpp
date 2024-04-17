@@ -21,7 +21,7 @@ static void execClock(uint64_t n){
 }
 
 static void execInst(uint64_t n){
-    Log("si n(n=%ld)",n);
+    // Log("si n(n=%ld)",n);
     for(int i=0;i<n;i++){
         while(!Inst_finished){
             execClock(1);

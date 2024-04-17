@@ -10,6 +10,18 @@ module ysyx22041405_WBU#(parameter WIDTH = 32)(
     input                    wb_sel,
     input [        7: 0]     wb_mask
 );
+    /*===============================================================
+        wire spilt
+    ===============================================================*/
+    wire [`LS_DATA_WIDTH - 1: 0] from_LS_Data;
+    wire [`LS_CTRL_WIDTH - 1: 0] from_LS_Ctrl;
+    wire [`FORD_MES_WIDTH- 1: 0] WB_forward_mes;
+
+
+
+
+    //================================================================
+    //================================================================
     assign rf_wdata = rf_wdata_r;
     reg [WIDTH - 1: 0]rf_wdata_r;
     always @(*) begin

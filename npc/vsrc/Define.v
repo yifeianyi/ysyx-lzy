@@ -27,9 +27,32 @@
 
 //pipline width
 `define IF_ID_WIDTH 64
-`define ID_Data_WIDTH 101+`IF_ID_WIDTH //Imm + rf_rs1 + rf_rs2
-`define ID_CTRL_WIDTH 20 // aluCtrl + alu_s2_sel
-`define ID_EX_WIDTH  `ID_Data_WIDTH+`ID_CTRL_WIDTH
+
+`define BASE_MES_WIDTH 3 // inst_ebreak + inst_lui + inst_valid
+`define FORD_MES_WIDTH 16 // id_rf_we, rs1, rs2, rd
+`define EXU_CTRL_WIDHT 16
+`define LSU_CTRL_WIDTH 9
+`define WBU_CTRL_WIDTH 
+
+`define ID_Data_WIDTH 96 + `IF_ID_WIDTH //Imm + rf_rs1 + rf_rs2
+`define ID_CTRL_WIDTH  `EXU_CTRL_WIDHT + `BASE_MES_WIDTH + `LSU_CTRL_WIDTH + `FORD_MES_WIDTH
+`define ID_EX_WIDTH  `ID_Data_WIDTH +`ID_CTRL_WIDTH
+
+`define EX_DATA_WIDTH 32 + `IF_ID_WIDTH // alu_result 
+`define EX_CTRL_WIDTH `BASE_MES_WIDTH + `FORD_MES_WIDTH + `LSU_CTRL_WIDTH
+`define EX_LS_WIDTH `EX_DATA_WIDTH + `EX_CTRL_WIDTH 
+
+`define LS_DATA_WIDTH 
+`define LS_CTRL_WIDTH
+`define LS_WB_WIDTH `LS_DATA_WIDTH + `LS_CTRL_WIDTH
+
+
+
+import "DPI-C" function void pmem_read(input int raddr, output int rdata);
+import "DPI-C" function void pmem_write(input int waddr, input int wdata, input byte mask);
+
+import "DPI-C" function void inst_finished();
+import "DPI-C" function void inst_nsupport();
 
 
 

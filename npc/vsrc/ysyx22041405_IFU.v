@@ -5,7 +5,7 @@ module ysyx22041405_IFU#(parameter WIDTH = 32)(
 
     /*      output       */
     output [      31 : 0] pc,
-
+    output [WIDTH - 1: 0] inst,
     /*    Ctrl signal    */
     output  IF_ID_we
     // input nextpc_sel
@@ -14,6 +14,7 @@ module ysyx22041405_IFU#(parameter WIDTH = 32)(
     initial begin
         pc_r = 32'h80000000;
     end
+
     always @(posedge clk) begin
         if(rst) begin
             pc_r <= 32'h80000000;
@@ -22,33 +23,36 @@ module ysyx22041405_IFU#(parameter WIDTH = 32)(
             // pc_r <= nextpc_sel?next_pc:(pc_r + 4);
             pc_r <= pc_r + 4;
         end
+
+        pmem_read(pc , inst);
     end
     assign pc   = pc_r;
     
     /*-------------------------------------*/
-    reg  [1: 0] IF_state;
-    reg IF_ID_we_r;
     assign IF_ID_we = 1'b1;
-    initial begin
-        IF_state = `IDLE;
-    end
+    // reg  [1: 0] IF_state;
+    // reg IF_ID_we_r;
+    
+    // initial begin
+    //     IF_state = `IDLE;
+    // end
 
-    always @(posedge clk)begin
-        if(rst) begin
-            IF_state <= `IDLE;
-        end
-        else begin
-            case (IF_state)
-                `IDLE:begin
-                    IF_state   <= `WAIT;
-                end
-                `WAIT: begin
-                    IF_state   <= `WAIT;
-                end
-                default: IF_state <= `STATE_ERROR;
-            endcase
-        end
-    end
+    // always @(posedge clk)begin
+    //     if(rst) begin
+    //         IF_state <= `IDLE;
+    //     end
+    //     else begin
+    //         case (IF_state)
+    //             `IDLE:begin
+    //                 IF_state   <= `WAIT;
+    //             end
+    //             `WAIT: begin
+    //                 IF_state   <= `WAIT;
+    //             end
+    //             default: IF_state <= `STATE_ERROR;
+    //         endcase
+    //     end
+    // end
     // always@(*)begin
     //     case (IF_state)
     //         `IDLE:begin

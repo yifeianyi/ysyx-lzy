@@ -83,8 +83,8 @@ extern "C"{
         npc_status.state = NPC_END;
     }
     void test_addi(int imm){
-        Log("In addi test.");
-        printf("Imm: "FMT_WORD"\n",imm);
+        // Log("In addi test.");
+        // printf("Imm: "FMT_WORD"\n",imm);
     }
 
     void inst_nsupport(){

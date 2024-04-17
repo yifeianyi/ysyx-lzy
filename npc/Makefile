@@ -67,7 +67,7 @@ all:
 #运行编译好的bin文件
 sim: $(BIN) 
 	@echo "==================== RTL sim finished ===================="
-# +$(call git_commit, "sim RTL")
+	+$(call git_commit, "sim RTL")
 run: sim gentest
 	@./$(BIN) $(ARGS) $(IMG)
 
@@ -95,7 +95,7 @@ gentest: $(TEST).S
 	@$(RV)-ld $(TEST).o -o $(TEST)
 	@$(RV)-objcopy --only-section=.text -O binary $(TEST) $(TEST).bin
 
-wave: run
+wave: runb
 	gtkwave dump.vcd dummy.gtkw
 
 
