@@ -88,7 +88,7 @@ extern "C"{
     }
 
     void inst_nsupport(){
-        Log("This instruction is not support");
+        Log("This instruction is not support.inst:%08x",percpu.getCurInst());
         // printf("",percpu.getCurInst());
         npc_status.state = NPC_ABORT;
     }

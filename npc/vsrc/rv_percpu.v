@@ -18,7 +18,7 @@ ysyx22041405_IFU#(
 ) u_IFU
 (
     /*       input       */
-    .clk  	( clk   ),
+    .clk  	( clk   ), 
 	.rst  	( rst   ),
     // .next_pc(next_pc),
 	
@@ -53,13 +53,10 @@ wire [WIDTH-1:0] 	Imm;
 // wire [3:0]          branch_sel;
 // wire                branch_compare;
 
-// // WBU
-// wire                wb_sel;
-// wire [        7: 0] wb_mask;
 wire [`ID_Data_WIDTH - 1: 0]ID_Data_message;
 wire [`ID_CTRL_WIDTH - 1: 0]ID_Ctrl_message;
-wire [WIDTH - 1: 0] ls_rf_wdata;
-wire [        4: 0] ls_rf_waddr;
+wire [WIDTH - 1: 0] wb_rf_wdata;
+wire [        4: 0] wb_rf_waddr;
 wire ls_rf_we;
 ysyx22041405_IDU #(
     .WIDTH 	( 32  )
@@ -69,15 +66,15 @@ ysyx22041405_IDU #(
     .clk    	    ( clk     ),
     .rst    	    ( rst     ),
     .IF_ID_message  (IF_ID_message),
-    .rf_wdata       ( ls_rf_wdata),
-    .rf_waddr       ( ls_rf_waddr),  
+    .rf_wdata       ( wb_rf_wdata),
+    .rf_waddr       ( wb_rf_waddr),  
 
     /*      output       */
     .ID_Data_message (ID_Data_message),
 
 
     /*    Ctrl signal    */
-    .rf_we          (ls_rf_we),
+    .rf_we          (wb_rf_we),
     .ID_Ctrl_message( ID_Ctrl_message)
 
     //EXU
@@ -104,8 +101,6 @@ ysyx22041405_pipeline #(.WIDTH(`ID_EX_WIDTH)) ID_EX(
 // /*----------------------------- EXU -------------------------------------------*/
 wire [`EX_DATA_WIDTH - 1: 0] EX_Data_message;
 wire [`EX_CTRL_WIDTH - 1: 0] EX_Ctrl_message;
-// // wire [WIDTH-1:0] 	pc_add4;
-// // wire [WIDTH-1:0] 	next_pc;
 ysyx22041405_EXU #(
     .WIDTH(32)
 )u_EXU
@@ -118,6 +113,8 @@ ysyx22041405_EXU #(
 
     /*      output       */
     .EX_Data_message(EX_Data_message),
+    .ex_rf_raddr1   (ex_rf_raddr1),
+    .ex_rf_raddr2   (ex_rf_raddr2),
     // .pc_add4    ( pc_add4   ),
     // .next_pc    ( next_pc   ),
 
@@ -141,10 +138,8 @@ ysyx22041405_pipeline #(.WIDTH(`EX_LS_WIDTH)) EX_LS(
 
 
 /*----------------------------- MEM -------------------------------------------*/
-
-
-wire [WIDTH-1:0] 	ls_dm_rdata;
-// wire [WIDTH-1:0] 	dm_addr;
+wire [`LS_DATA_WIDTH - 1: 0] LS_Data_message; 
+wire [`LS_CTRL_WIDTH - 1: 0] LS_Ctrl_message;
 ysyx22041405_LSU#(
     .WIDTH(32)
 ) u_LSU
@@ -154,46 +149,55 @@ ysyx22041405_LSU#(
 
     /*       input       */
     .EX_LS_message  (EX_LS_message),
-    // .pc_add4    (   pc_add4 ),
 
     /*      output       */
-    // .LS_Data_message(LS_Data_message),
+    .LS_Data_message(LS_Data_message),
+    .ls_rf_raddr1   (ls_rf_raddr1),
+    .ls_rf_raddr2   (ls_rf_raddr2),
 
     /*    Ctrl signal    */
-    // .LS_Ctrl_message(LS_Ctrl_message),
+    .LS_Ctrl_message(LS_Ctrl_message)
+);
+
+
+wire [`LS_WB_WIDTH - 1: 0] LS_message = {LS_Data_message, LS_Ctrl_message};
+wire [`LS_WB_WIDTH - 1: 0] LS_WB_message;
+ysyx22041405_pipeline #(.WIDTH(`LS_WB_WIDTH)) LS_WB(
+    .clk        (   clk         ),
+    .rst        (   rst         ),
+    .we         (   1'b1        ),
+    .data_in    (   LS_message  ),
+    .data_out   (  LS_WB_message)
+);
+
+/*----------------------------- WBU -------------------------------------------*/
+wire wb_rf_we;
+wire [WIDTH - 1: 0]wb_rf_wdata;
+ysyx22041405_WBU#(
+    .WIDTH(32)
+) u_WBU
+(
+    /*       input       */
+    .LS_WB_message  (LS_WB_message),
+
+    /*      output       */
+    .wb_rf_raddr1   (wb_rf_raddr1),
+    .wb_rf_raddr2   (wb_rf_raddr2),
+    .wb_rf_wdata    (wb_rf_wdata),
+
+    /*    Ctrl signal    */
+    .wb_rf_we       (wb_rf_we   ),
 
     /*    Debug     */
     .debug_inst ( debug_inst  ),
     .debug_pc   ( debug_pc    )
 );
 
+/*--------------------------------- forwarding ------------------------------------------*/
+wire [4:0] ex_rf_raddr1,ex_rf_raddr2;
+wire [4:0] ls_rf_raddr1,ls_rf_raddr2;
+wire [4:0] wb_rf_raddr1,wb_rf_raddr2;
 
-// wire [`LS_WB_WIDTH - 1: 0] LS_message;
-// wire [`LS_WB_WIDTH - 1: 0] LS_WB_message;
-// ysyx22041405_pipeline #(.WIDTH(`LS_WB_WIDTH)) LS_WB(
-//     .clk        (   clk         ),
-//     .rst        (   rst         ),
-//     .we         (   1'b1        ),
-//     .data_in    (   LS_message  ),
-//     .data_out   (  LS_WB_message)
-// );
 
-/*----------------------------- WBU -------------------------------------------*/
-// ysyx22041405_WBU#(
-//     .WIDTH(32)
-// ) u_WBU
-// (
-//     /*       input       */
-//     // .clk        (clk),
-//     // .rst        (rst),
-//     .dm_addr    (   dm_addr     ),
-//     .dm_rdata   (   dm_rdata   ),
-//     /*      output       */
-//     .rf_wdata   (   rf_wdata    ),
-
-//     /*    Ctrl signal    */
-//     .wb_sel     (   wb_sel      ),
-//     .wb_mask    (   wb_mask     )
-// );
 
 endmodule //rv_percpu

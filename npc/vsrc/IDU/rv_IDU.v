@@ -32,9 +32,6 @@ module rv_IDU#(parameter WIDTH = 32)(
 
     // // MEM
     // output                dm_src_sel,
-    // output [        7: 0] dm_mask,
-    // output                dm_re,
-    // output                dm_we,
 
     // // WBU
     // output                wb_sel,
@@ -262,46 +259,51 @@ module rv_IDU#(parameter WIDTH = 32)(
     // /*==========  MEM  =========*/
     // assign dm_src_sel     = inst_jalr | inst_jal;
     wire [7: 0] dm_mask = dm_mask_r; 
-    // assign dm_re          = load_inst;
-    wire        dm_we   = S_type;
+    wire dm_re  = inst_LOAD;
+    wire dm_we  = S_type;
 
     // /*==========  WBU  =========*/
-    // assign wb_sel         = load_inst;
-    // assign wb_mask        = wb_mask_r; 
+    // assign wb_sel         = inst_LOAD;
+    wire [7:0]wb_rmask        = wb_mask_r; 
 
     reg [        7: 0] dm_mask_r;
-    // reg [        7: 0] wb_mask_r;
+    reg [        7: 0] wb_mask_r;
     
     always @(*) begin
         case (funct3[1:0])
             2'b00:begin
-                // wb_mask_r = `MASK_BYTE;
+                wb_mask_r = `MASK_BYTE;
                 dm_mask_r = `MASK_BYTE;
             end
             2'b01:begin
-                // wb_mask_r = `MASK_HALF;
+                wb_mask_r = `MASK_HALF;
                 dm_mask_r = `MASK_HALF;
             end
             2'b10:begin
-                // wb_mask_r = `MASK_WORD;
+                wb_mask_r = `MASK_WORD;
                 dm_mask_r = `MASK_WORD;
             end
-            default:dm_mask_r = `MASK_ZERO; //wb_mask_r= `MASK_ZERO;
+            default:begin
+                dm_mask_r = `MASK_ZERO; 
+                wb_mask_r = `MASK_ZERO;
+            end
         endcase
     end
 
 
 
     /*================================== IDU_state =========================================*/
-    /*
-        valid-ready state: TODO
-    */
+
+    /*===================================================================================
+    wire combine
+    ===================================================================================*/
     wire [`BASE_MES_WIDTH - 1: 0] Base_message    = { inst_ebreak,inst_lui, inst_valid };
     wire [`FORD_MES_WIDTH - 1: 0] ID_forward_mes  = { id_rf_we ,rs1 , rs2, rd};
     wire [`EXU_CTRL_WIDHT - 1: 0] EX_Ctrl_message = { alu_Ctrl, alu_s1_sel, alu_s2_sel };
-    wire [`LSU_CTRL_WIDTH - 1: 0] LS_Ctrl_message = { dm_mask , dm_we };
+    wire [`LSU_CTRL_WIDTH - 1: 0] LS_Ctrl_message = { dm_mask , dm_we ,dm_re};
+    wire [`WBU_CTRL_WIDTH - 1: 0] WB_Ctrl_message = { wb_rmask};
 
-    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, IF_ID_message};
-    assign ID_Ctrl_message = {EX_Ctrl_message, ID_forward_mes, Base_message ,LS_Ctrl_message};
+    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, pc_add4, IF_ID_message};
+    assign ID_Ctrl_message = {EX_Ctrl_message, ID_forward_mes, Base_message ,LS_Ctrl_message,WB_Ctrl_message};
 
 endmodule //rv_IDU
