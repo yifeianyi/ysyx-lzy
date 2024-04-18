@@ -4,6 +4,7 @@ module ysyx22041405_WBU#(parameter WIDTH = 32)(
 
     /*      output       */
     output[WIDTH - 1: 0]     wb_rf_wdata,
+    output[        4: 0]     wb_rf_waddr,
     output[        4: 0]     wb_rf_raddr1,
     output[        4: 0]     wb_rf_raddr2,
 
@@ -26,9 +27,10 @@ module ysyx22041405_WBU#(parameter WIDTH = 32)(
 
     //--- Data ---
     wire [WIDTH - 1: 0] dm_rdata, ls_rf_wdata, inst;
+    wire [ 4: 0]ls_rf_waddr;
     wire [31: 0] pc;
     wire [`IF_ID_WIDTH - 1: 0] if_mes;
-    assign {ls_rf_wdata, dm_rdata ,if_mes} = from_LS_Data;
+    assign {ls_rf_waddr, ls_rf_wdata, dm_rdata ,if_mes} = from_LS_Data;
     assign {pc, inst} = if_mes;
 
     //--- Ctrl ---
@@ -36,13 +38,14 @@ module ysyx22041405_WBU#(parameter WIDTH = 32)(
     wire inst_ebreak, inst_valid;
     wire [  7: 0] wb_rmask;
 
-    assign {base_mse, wb_rmask, wb_rf_we} = from_LS_Ctrl;
+    assign {base_mse, wb_rf_we, wb_rmask} = from_LS_Ctrl;
     assign { inst_ebreak, inst_valid } = base_mse;
 
     //================================================================
     //================================================================
 
     assign wb_rf_wdata = ls_rf_wdata;   // 过渡方案
+    assign wb_rf_waddr = ls_rf_waddr;
 
     // reg [WIDTH - 1: 0]rf_wdata_r;
     // always @(*) begin

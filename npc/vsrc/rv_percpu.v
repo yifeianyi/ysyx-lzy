@@ -183,6 +183,7 @@ ysyx22041405_WBU#(
     /*      output       */
     .wb_rf_raddr1   (wb_rf_raddr1),
     .wb_rf_raddr2   (wb_rf_raddr2),
+    .wb_rf_waddr    (wb_rf_waddr),
     .wb_rf_wdata    (wb_rf_wdata),
 
     /*    Ctrl signal    */

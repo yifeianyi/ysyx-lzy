@@ -44,7 +44,7 @@
 `define EX_LS_WIDTH `EX_DATA_WIDTH + `EX_CTRL_WIDTH 
 
 //LSU
-`define LS_DATA_WIDTH `IF_ID_WIDTH  + 64 //ls_rf_wdata + dm_rdata
+`define LS_DATA_WIDTH `IF_ID_WIDTH  + 32*2 + 5 //ls_rf_wdata + dm_rdata + ls_rf_waddr
 `define LS_CTRL_WIDTH `EX_BASE_MES_WIDTH + 9 // wb_rmask + wb_rf_we
 `define LS_WB_WIDTH `LS_DATA_WIDTH + `LS_CTRL_WIDTH
 

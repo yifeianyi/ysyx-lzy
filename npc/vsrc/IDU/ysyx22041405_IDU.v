@@ -28,7 +28,7 @@ module ysyx22041405_IDU #(parameter WIDTH = 32)(
 );
 
     
-    rv_IDU IDU 
+    rv_IDU RV_IDU 
     (
         /*       input       */
         .clk    	( clk     ),

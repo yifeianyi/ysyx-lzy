@@ -65,6 +65,6 @@ wire [WIDTH - 1: 0] dm_addr = alu_result ;
 ***************************************************************************/
 
     
-    assign LS_Data_message = {ls_rf_wdata, ls_dm_rdata, pc,inst};
+    assign LS_Data_message = {ls_rf_waddr, ls_rf_wdata, ls_dm_rdata, pc,inst};
     assign LS_Ctrl_message = {base_mse, ls_rf_we, LS_Ctrl_mes[`WBU_CTRL_WIDTH - 1: 0] };
 endmodule
