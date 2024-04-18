@@ -1,14 +1,16 @@
-#include "common.h"
+#include <common.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string>
 #include <npcState.hpp>
+#include <itrace.hpp>
 #define NR_CMD ARRLEN(cmd_table)
 static int is_batch_mode = false;
 void npc_execute(uint64_t n,std::string arg);
 
 extern NPCState npc_status;
 extern CPU_module percpu;
+// extern Itrace itrace;
 void init_regex();
 void init_wp_pool();
 
@@ -55,8 +57,8 @@ static struct {
   { "sc", " step one Clock", cmd_sc},
   { "info", "print regfiles ", cmd_info},
   { "x", "print segment memory", cmd_x},
-  {"itrace", "Turn ON or turn off the instruction trace.",cmd_itrace},
-  {"mtrace", "Turn ON or turn off the memory trace.",cmd_mtrace},
+  {"itrace", "Turn ON('o' or Null) or turn off('c') itrace and display iringbuf ('r').",cmd_itrace},
+  {"mtrace", "Turn ON('o' or Null) or turn off('c') mtrace.",cmd_mtrace},
   // { "sc", " step one clock." NULL}
 };
 
@@ -64,24 +66,35 @@ static struct {
 static int cmd_itrace(char *args){
   if(args == NULL || strcmp(args, "o") == 0){
     percpu.itraceTurn = true;
-    printf(ASNI_FMT("itrace: ON",ASNI_FG_GREEN));
+    printf("Itrace: "ASNI_FMT("ON",ASNI_FG_GREEN)"\n");
     return 0;
   }
-  if(strcmp(args, "c")){
-    printf(ASNI_FMT("itrace: OFF",ASNI_FG_RED));
+  if(strcmp(args, "c")==0){
+    printf("Itrace: "ASNI_FMT("OFF",ASNI_FG_RED)"\n");
     percpu.itraceTurn = false;
+    return 0;
+  }
+
+  if(strcmp(args,"r")==0){
+    if(percpu.itraceTurn){
+      Display_ringbuf();
+    }
+    else{
+      printf("Itrace is not open.\n");
+    }
+    
     return 0;
   }
 }
 static int cmd_mtrace(char *args){
   if(args == NULL || strcmp(args, "o") == 0){
     percpu.mtraceTurn = true;
-    printf(ASNI_FMT("mtrace: ON",ASNI_FG_GREEN));
+    printf("Mtrace: "ASNI_FMT("ON",ASNI_FG_GREEN)"\n");
     return 0;
   }
   if(strcmp(args, "c")){
     percpu.mtraceTurn = false;
-    printf(ASNI_FMT("mtrace: OFF",ASNI_FG_RED));
+    printf("Mtrace: "ASNI_FMT("OFF",ASNI_FG_RED)"\n");
     return 0;
   }
 }

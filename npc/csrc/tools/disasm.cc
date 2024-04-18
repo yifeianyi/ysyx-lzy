@@ -89,6 +89,8 @@ extern "C" void disassemble(char *str, uint64_t pc, uint8_t *code, int nbyte)
   raw_string_ostream os(s);
   gIP->printInst(&inst, pc, "", *gSTI, os);
 
+  // Log("In disasm, get inst.");
+
   int skip = s.find_first_not_of('\t');
   const char *p = s.c_str() + skip;
   strcpy(str, p);

@@ -14,6 +14,7 @@ CPU_module::CPU_module(/*gs */)
     top      = new Vtop;
     contextp = top->contextp();
     Log("The CPU model is created successfully.");
+    Log("Itrace: "ASNI_FMT("ON",ASNI_FG_GREEN));
 }
 
 CPU_module::~CPU_module()

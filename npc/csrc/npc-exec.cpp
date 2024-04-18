@@ -1,7 +1,8 @@
 #include "common.h"
 #include <npcState.hpp>
-// #include <string>
+#include <itrace.hpp>
 extern NPCState npc_status;
+// extern Itrace itrace;
 CPU_module percpu;
 bool Inst_finished = false;
 extern "C"  void inst_finished(){
@@ -27,6 +28,12 @@ static void execInst(uint64_t n){
             execClock(1);
         }
         Inst_finished = false;
+
+        if(percpu.itraceTurn){
+            Itrace_Record(percpu.getCurPC());
+        }
+        
+
         if(npc_status.state == NPC_END || npc_status.state == NPC_ABORT)break;
     }
 }

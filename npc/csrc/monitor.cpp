@@ -17,6 +17,7 @@ static int difftest_port = 1234;
 
 void init_monitor(int argc, char *argv[]){
     parse_args(argc, argv);
+    init_disasm("riscv64-pc-linux-gnu");
     percpu.TraceOpen();
     percpu.Reset();
     
