@@ -16,7 +16,7 @@ module ysyx22041405_regfile#(parameter WIDTH = 32)(
 reg [WIDTH -1: 0] rf[`REGNUM -1: 0];
 //WRITE
 
-always @(posedge clk) begin
+always @(negedge  clk) begin
     if(rst)begin
         integer i;
         for (i = 0; i < 32; i = i + 1) begin

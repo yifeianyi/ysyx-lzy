@@ -1,4 +1,4 @@
-`timescale 1ps/1ps
+`timescale 1us / 1ps
 
 //inst_type
 `define R_TYPE 7'b0100000

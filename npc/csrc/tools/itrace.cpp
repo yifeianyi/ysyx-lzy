@@ -30,6 +30,7 @@ void Itrace_Record(paddr_t pc){
     char buffer[LOG_LEN];
     char *log = buffer;
     char *p = log;
+    p += sprintf(p, "0x%08x:",pc);
     for(int i = 0; i < 4;i++){
         p += sprintf(p, " %02x", inst[i]);
     }
@@ -38,13 +39,13 @@ void Itrace_Record(paddr_t pc){
     // disasm
     disassemble(p, pc, inst, 4);
     // Log("log: %s.",log);
-    
+
     // push_to_ringbuf
     push_to_iringbuf(log,pc);
 }
 
 void Display_ringbuf(){
-    Log("=============== iringbuf ==================");
+    printf(ASNI_FMT("=============== iringbuf ==================", ASNI_FG_BLUE)"\n");
     for(uint32_t i = 0; i < BUFFER_SIZE; i++){
         if(Cur_pc == ringbuf[i].pc && ringbuf[i].idx == (LOG_LEN + tail-1) % LOG_LEN ) {
             printf(ASNI_FMT("--> %s", ASNI_BG_GREEN)"\n",ringbuf[i].logbuf);
