@@ -29,7 +29,15 @@ end
 import "DPI-C" function void fetch_regfile_data(input logic [WIDTH-1:0] regfile_data[]);
 initial fetch_regfile_data(rf); 
 //READ OUT 
-assign rdata1 = (raddr1==5'b0) ? {WIDTH{1'b0}} : rf[raddr1];
-assign rdata2 = (raddr2==5'b0) ? {WIDTH{1'b0}} : rf[raddr2];
+// assign rdata1 = (raddr1==5'b0) ? {WIDTH{1'b0}} : rf[raddr1];
+// assign rdata2 = (raddr2==5'b0) ? {WIDTH{1'b0}} : rf[raddr2];
+
+// 如果读地址等于写地址，并且正在写操作，则直接返回写数据
+assign rdata1 = (raddr1 == 5'b0) ? {(WIDTH){1'b0}}:                
+                (raddr1 == waddr && we) ? wdata:
+                            rf[raddr1] ;
+assign rdata2 = (raddr2 == 5'b0) ? {(WIDTH){1'b0}}:
+                (raddr2 == waddr && we) ? wdata:
+                            rf[raddr2] ;
 
 endmodule

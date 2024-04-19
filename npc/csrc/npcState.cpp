@@ -22,7 +22,6 @@ CPU_module::~CPU_module()
 {
     tfp->close();
     delete top;
-
 }
 void CPU_module::Reset(){
     top->rst = 1;

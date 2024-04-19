@@ -22,7 +22,6 @@ static void execClock(uint64_t n){
             npc_status.halt_pc = percpu.getCurPC();
             break;
         }
-        // Log("Cur_pc  :"FMT_WORD,percpu.getCurPC());
     }
 }
 
@@ -34,10 +33,10 @@ static void execInst(uint64_t n){
         }
         Inst_finished = false;
 
-
         if(percpu.itraceTurn){
             Itrace_Record(percpu.getCurPC());
         }
+
         //difftest
         //执行前先拿到pc，执行后pc值会变.
         ref_difftest_regcpy(&Ref_state, DIFFTEST_TO_DUT);

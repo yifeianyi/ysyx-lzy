@@ -8,6 +8,10 @@ module ysyx22041405_IDU #(parameter WIDTH = 32)(
 
     /*      output       */
     output[`ID_Data_WIDTH-1: 0] ID_Data_message,
+    // output[        4: 0] id_rf_raddr1,
+    // output[        4: 0] id_rf_raddr2,
+    // output[WIDTH - 1: 0] id_rf_rdata1,
+    // output[WIDTH - 1: 0] id_rf_rdata2,
     
     // /*    Ctrl signal    */
     input                       rf_we,
@@ -15,16 +19,6 @@ module ysyx22041405_IDU #(parameter WIDTH = 32)(
     // EXU 
     // output [3:0]          branch_sel,
     // output                branch_compare,
-
-    // MEM
-    // output                dm_src_sel,
-    // output                dm_re,
-    // output                dm_we,
-    // output [        7: 0] dm_mask,
-
-    // WBU
-    // output                wb_sel,
-    // output [        7: 0] wb_mask
 );
 
     
@@ -40,25 +34,17 @@ module ysyx22041405_IDU #(parameter WIDTH = 32)(
         /*      output       */
         .ID_Data_message (ID_Data_message),
 
+        // .id_rf_raddr1   (id_rf_raddr1),
+        // .id_rf_raddr2   (id_rf_raddr2),
+        // .id_rf_rdata1   (id_rf_rdata1),
+        // .id_rf_rdata2   (id_rf_rdata2),
+
         /*    Ctrl signal    */
         .rf_we          (rf_we),
         .ID_Ctrl_message( ID_Ctrl_message)
         //EXU
-        // .alu_Ctrl   ( alu_Ctrl),
-        // .alu_s1_sel (alu_s1_sel)
-        // .alu_s2_sel (alu_s2_sel)
         // .branch_sel (branch_sel),
         // .branch_compare (branch_compare),
-
-        //MEM
-        // .dm_src_sel (dm_src_sel),
-        // .dm_mask    (dm_mask),
-        // .dm_re      (dm_re),
-        // .dm_we      (dm_we),
-
-        //WBU
-        // .wb_sel     (   wb_sel  ),
-        // .wb_mask    (   wb_mask )
     );
     
     

@@ -28,7 +28,6 @@ ysyx22041405_IFU#(
 
     /*    Ctrl signal    */
     .IF_ID_we   ( IF_ID_we )
-    // .nextpc_sel(nextpc_sel)
 );
 
 wire [`IF_ID_WIDTH - 1:0] IF_message;
@@ -57,7 +56,6 @@ wire [`ID_Data_WIDTH - 1: 0]ID_Data_message;
 wire [`ID_CTRL_WIDTH - 1: 0]ID_Ctrl_message;
 wire [WIDTH - 1: 0] wb_rf_wdata;
 wire [        4: 0] wb_rf_waddr;
-wire ls_rf_we;
 ysyx22041405_IDU #(
     .WIDTH 	( 32  )
 )u_IDU
@@ -71,7 +69,6 @@ ysyx22041405_IDU #(
 
     /*      output       */
     .ID_Data_message (ID_Data_message),
-
 
     /*    Ctrl signal    */
     .rf_we          (wb_rf_we),
@@ -110,13 +107,17 @@ ysyx22041405_EXU #(
 
     /*       input       */
     .ID_EX_message(ID_EX_message),
+    .ex_rf_rdata1_i (ex_rf_rdata1_o),
+    .ex_rf_rdata2_i (ex_rf_rdata2_o),
+
 
     /*      output       */
     .EX_Data_message(EX_Data_message),
+
     .ex_rf_raddr1   (ex_rf_raddr1),
     .ex_rf_raddr2   (ex_rf_raddr2),
-    // .pc_add4    ( pc_add4   ),
-    // .next_pc    ( next_pc   ),
+    .ex_rf_rdata1   (ex_rf_rdata1),
+    .ex_rf_rdata2   (ex_rf_rdata2),
 
     /*    Ctrl signal    */
     .EX_Ctrl_message(EX_Ctrl_message)
@@ -152,8 +153,9 @@ ysyx22041405_LSU#(
 
     /*      output       */
     .LS_Data_message(LS_Data_message),
-    .ls_rf_raddr1   (ls_rf_raddr1),
-    .ls_rf_raddr2   (ls_rf_raddr2),
+    .ls_rf_waddr    (ls_rf_waddr),
+    .ls_rf_we       (ls_rf_we   ),
+    .ls_rf_wdata    (ls_rf_wdata_i),
 
     /*    Ctrl signal    */
     .LS_Ctrl_message(LS_Ctrl_message)
@@ -181,8 +183,8 @@ ysyx22041405_WBU#(
     .LS_WB_message  (LS_WB_message),
 
     /*      output       */
-    .wb_rf_raddr1   (wb_rf_raddr1),
-    .wb_rf_raddr2   (wb_rf_raddr2),
+    // .wb_rf_raddr1   (wb_rf_raddr1),
+    // .wb_rf_raddr2   (wb_rf_raddr2),
     .wb_rf_waddr    (wb_rf_waddr),
     .wb_rf_wdata    (wb_rf_wdata),
 
@@ -195,10 +197,38 @@ ysyx22041405_WBU#(
 );
 
 /*--------------------------------- forwarding ------------------------------------------*/
+wire [WIDTH - 1: 0] ex_rf_rdata1, ex_rf_rdata2;
+wire [WIDTH - 1: 0] ex_rf_wdata_i, ls_rf_wdata_i;
+wire [WIDTH - 1: 0] ex_rf_rdata1_o, ex_rf_rdata2_o;
+
 wire [4:0] ex_rf_raddr1,ex_rf_raddr2;
-wire [4:0] ls_rf_raddr1,ls_rf_raddr2;
-wire [4:0] wb_rf_raddr1,wb_rf_raddr2;
+wire [4:0] ls_rf_waddr;
+
+wire ls_rf_we;
 
 
+forwarding_Ctrl#(
+    .WIDTH(32)
+) u_ford_unit
+(
+    /*       input       */
+    .ex_rf_raddr1   (ex_rf_raddr1),
+    .ex_rf_raddr2   (ex_rf_raddr2),
+    .ex_rf_rdata1   (ex_rf_rdata1),
+    .ex_rf_rdata2   (ex_rf_rdata2),
+
+    .ls_rf_waddr    (ls_rf_waddr),
+    .ls_rf_we       (ls_rf_we   ),
+    .ls_rf_wdata_i  (ls_rf_wdata_i),
+
+    .wb_rf_waddr    (wb_rf_waddr),
+    .wb_rf_we       (wb_rf_we   ),
+    .wb_rf_wdata_i  (wb_rf_wdata),
+
+
+    /*       output       */
+    .ex_rf_rdata1_o (ex_rf_rdata1_o),
+    .ex_rf_rdata2_o (ex_rf_rdata2_o)
+);
 
 endmodule //rv_percpu

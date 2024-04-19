@@ -5,8 +5,8 @@ module ysyx22041405_WBU#(parameter WIDTH = 32)(
     /*      output       */
     output[WIDTH - 1: 0]     wb_rf_wdata,
     output[        4: 0]     wb_rf_waddr,
-    output[        4: 0]     wb_rf_raddr1,
-    output[        4: 0]     wb_rf_raddr2,
+    // output[        4: 0]     wb_rf_raddr1,
+    // output[        4: 0]     wb_rf_raddr2,
 
     /*    Ctrl signal    */
     output                   wb_rf_we,

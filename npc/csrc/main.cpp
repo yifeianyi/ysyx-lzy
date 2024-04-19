@@ -16,15 +16,6 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-
-
-
-
-
-
-
-
-
 int is_exit_status_bad(){
   int good = (npc_status.state == NPC_QUIT);
   Log("good:%d",good);

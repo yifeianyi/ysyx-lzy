@@ -6,16 +6,6 @@ module ysyx22041405_ALU#(parameter WIDTH = 32)(
     //====== ALU Ctrl ======
     input [       13: 0] alu_Ctrl
 );
-    // select alu_op
-    // localparam ALUSHIFT = 3'd7;// 111
-    // localparam ALUADDER = 3'd6;// 110
-    // localparam ALUSLT   = 3'd5;// 101
-    // localparam ALUBGE   = 3'd4;// 100
-    // localparam ALUAND   = 3'd3;// 011
-    // localparam ALUOR    = 3'd2;// 010
-    // localparam ALUXOR   = 3'd1;// 001
-    // localparam ALUMOD   = 3'd0;// 000
-
     localparam ALUDIV   = 10'b1000000000;
     localparam ALUMUL   = 10'b0100000000;
     localparam ALUSHIFT = 10'b0010000000;
@@ -140,29 +130,7 @@ module ysyx22041405_ALU#(parameter WIDTH = 32)(
     assign div_u = src1 / src2;
     assign div_s = $signed(src1) / $signed(src2);
 
-    
-    
-
     reg  [WIDTH - 1: 0] ret_base_d;
-    // wire [WIDTH - 1: 0] ret_base;
-    // wire [WIDTH - 1: 0] ret_mul;
-    // assign ret_base     = ret_base_d;
-    // assign ret_mul      = alu_op[3]? alu_mul: ret_base;
-    // assign result       = alu_op[4]? alu_div: alu_mul;
-
-    // always @(alu_op[2:0])begin
-    //     case (alu_op[2:0])
-    //     /* 111 */ ALUSHIFT:     ret_base_d = alu_shift;
-    //     /* 110 */ ALUADDER:     ret_base_d = alu_add;
-    //     /* 101 */ ALUSLT:       ret_base_d = alu_slt;
-    //     /* 100 */ ALUBGE:       ret_base_d = alu_bge;
-    //     /* 011 */ ALUAND:       ret_base_d = alu_and;
-    //     /* 010 */ ALUOR:        ret_base_d = alu_or;
-    //     /* 001 */ ALUXOR:       ret_base_d = alu_xor;
-    //     /* 000 */ ALUMOD:       ret_base_d = alu_mod;
-    //     endcase
-    // end
-
     always @(*) begin
         case(alu_op[9:0])
             ALUDIV:       ret_base_d = alu_div;

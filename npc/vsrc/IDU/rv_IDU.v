@@ -22,6 +22,10 @@ module rv_IDU#(parameter WIDTH = 32)(
 
     /*      output       */
     output[`ID_Data_WIDTH-1: 0] ID_Data_message,
+    // output[        4: 0] id_rf_raddr1,
+    // output[        4: 0] id_rf_raddr2,
+    // output[WIDTH - 1: 0] id_rf_rdata1,
+    // output[WIDTH - 1: 0] id_rf_rdata2,
     
     /*    Ctrl signal    */
     input                       rf_we,
@@ -31,13 +35,13 @@ module rv_IDU#(parameter WIDTH = 32)(
     // output                branch_compare,
 
     // // MEM
-    // output                dm_src_sel,
-
-    // // WBU
-    // output                wb_sel,
-    // output [        7: 0] wb_mask
 
 );  
+    // assign id_rf_raddr1 = rs1;
+    // assign id_rf_raddr2 = rs2;
+    // assign id_rf_rdata1 = rf_rdata1;
+    // assign id_rf_rdata2 = rf_rdata2;
+    //=======================================================================
     wire [31 :0 ]pc;
     wire [WIDTH - 1: 0] inst;
     assign {pc, inst} = IF_ID_message;
@@ -298,12 +302,28 @@ module rv_IDU#(parameter WIDTH = 32)(
     wire combine
     ===================================================================================*/
     wire [`BASE_MES_WIDTH - 1: 0] Base_message    = { inst_ebreak,inst_lui, inst_valid };
+    
     wire [`FORD_MES_WIDTH - 1: 0] ID_forward_mes  = { id_rf_we ,rs1 , rs2, rd};
     wire [`EXU_CTRL_WIDHT - 1: 0] EX_Ctrl_message = { alu_Ctrl, alu_s1_sel, alu_s2_sel };
     wire [`LSU_CTRL_WIDTH - 1: 0] LS_Ctrl_message = { dm_mask , dm_we ,dm_re};
     wire [`WBU_CTRL_WIDTH - 1: 0] WB_Ctrl_message = { wb_rmask};
 
-    assign ID_Data_message = {Imm, rf_rdata1, rf_rdata2, pc_add4, IF_ID_message};
-    assign ID_Ctrl_message = {EX_Ctrl_message, ID_forward_mes, Base_message ,LS_Ctrl_message,WB_Ctrl_message};
+    assign ID_Data_message = 
+    {
+        Imm, 
+        rf_rdata1, 
+        rf_rdata2, 
+        pc_add4, 
+        IF_ID_message
+    };
+
+    assign ID_Ctrl_message = 
+    {
+        EX_Ctrl_message, 
+        ID_forward_mes, 
+        Base_message,
+        LS_Ctrl_message,
+        WB_Ctrl_message
+    };
 
 endmodule //rv_IDU
