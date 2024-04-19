@@ -85,4 +85,5 @@ do { \
 extern "C" void disassemble(char *str, uint64_t pc, uint8_t *code, int nbyte);
 extern "C" void init_disasm(const char *triple);
 uint64_t get_time();
+enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 #endif

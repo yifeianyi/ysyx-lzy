@@ -13,6 +13,7 @@ CPU_module::CPU_module(/*gs */)
     tfp      = new VerilatedVcdC;
     top      = new Vtop;
     contextp = top->contextp();
+    cpu.pc   = 0x80000000;
     Log("The CPU model is created successfully.");
     Log("Itrace: "ASNI_FMT("ON",ASNI_FG_GREEN));
 }

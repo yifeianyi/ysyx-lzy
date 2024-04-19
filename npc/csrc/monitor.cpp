@@ -6,45 +6,40 @@
 extern CPU_module percpu;
 void sdb_set_batch_mode();
 static int parse_args(int argc, char *argv[]);
-// void init_log(const char *log_file);
 static long load_img();
-void init_mem();
+size_t init_mem();
 
-static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
-
+void init_difftest(size_t img_size);
 void init_monitor(int argc, char *argv[]){
     parse_args(argc, argv);
     init_disasm("riscv64-pc-linux-gnu");
     percpu.TraceOpen();
     percpu.Reset();
-    
-    init_mem();
+    size_t img_size =  init_mem();
+    init_difftest(img_size);
 }
 
 static int parse_args(int argc, char *argv[]){
     const struct option table[] = {
         {"batch"    , no_argument      , NULL, 'b'},
-        {"log"      , required_argument, NULL, 'l'},
         {"diff"     , required_argument, NULL, 'd'},
         {"port"     , required_argument, NULL, 'p'},
-        {"help"     , no_argument      , NULL, 'h'},
+        // {"help"     , no_argument      , NULL, 'h'},
         {0          , 0                , NULL,  0 },
   };
   int o;
-    while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
+    while ( (o = getopt_long(argc, argv, "-bd:p:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
-      case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
         printf("\t-b,--batch              run with batch mode\n");
-        printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
         printf("\n");
@@ -53,13 +48,17 @@ static int parse_args(int argc, char *argv[]){
   }
   return 0;
 }
-void init_mem(){
+size_t init_mem(){
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
-  long img_size = load_img();
+  size_t img_size = load_img();
   if(img_file!=NULL){
     Log("Load image size is %ld byte.",img_size);
+    return img_size;
   }
-  else Log("No image.");
+  else{
+    Log("No image.");
+    return 0;
+  } 
   
 }
 static long load_img(){

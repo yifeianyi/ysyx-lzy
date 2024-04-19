@@ -2,7 +2,7 @@
 #include <memory.h>
 #include <npcState.hpp>
 extern CPU_module percpu;
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
@@ -14,11 +14,8 @@ static void mtrace(paddr_t addr, int len, word_t data,char op){
         printf(ASNI_FMT("write %d byte data into "FMT_PADDR". data:" FMT_WORD,ASNI_FG_CYAN)"\n",len, addr, data);
     }
 }
-
-
-
 static inline bool in_pmem(paddr_t addr) {
-  return addr - CONFIG_MBASE < CONFIG_MSIZE;
+    return addr - CONFIG_MBASE < CONFIG_MSIZE;
 }
 
 static inline void Rshift_Data(int &wdata, char &mask, uint8_t *&p){
