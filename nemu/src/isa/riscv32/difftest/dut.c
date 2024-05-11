@@ -16,12 +16,18 @@
 #include <isa.h>
 #include <cpu/difftest.h>
 #include "../local-include/reg.h"
+static void csr_show(CPU_state *ref_r){
+  printf("   mepc:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\n", cpu.mepc ,ref_r->mepc);
+  printf("  mtvec:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\n", cpu.mtvec ,ref_r->mtvec);
+  printf("mstatus:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\n", cpu.mstatus ,ref_r->mstatus);
+  printf(" mcause:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\n", cpu.mcause ,ref_r->mcause);
+}
 void diff_compare_regsdisplay(CPU_state *ref_r,int idx){
   for (int i = 0; i < 32; i++)
   {
     if(i%3==0 && i!=0)printf("\n");
     if(i==idx){
-      printf("\033[31m%4s:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\033[37m \033[0m\t", reg_name(i), gpr(i),ref_r->gpr[i]);
+      printf(ANSI_FMT("%4s:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\t",ANSI_FG_RED), reg_name(i), gpr(i),ref_r->gpr[i]);
     }
     else{
       printf("%4s:  dut = "FMT_PADDR"\t  ref = "FMT_PADDR"\t", reg_name(i), gpr(i),ref_r->gpr[i]);
@@ -31,14 +37,21 @@ void diff_compare_regsdisplay(CPU_state *ref_r,int idx){
 }
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   // if( ref_r->pc != pc )return false;
+  if(ref_r->pc != pc ){
+    Log("PC is error!!!");
+    printf(ANSI_FMT("PC:\n\tdut:"FMT_PADDR" \n\tref:"FMT_PADDR"\n",ANSI_FG_RED),pc,ref_r->pc);
+    diff_compare_regsdisplay(ref_r,-1);
+    csr_show(ref_r);
+    return false;
+  }
 
   for(int i=0;i<32;i++){
     if(ref_r->gpr[i] != gpr(i))
     {
       Log("reg is error!!!");
       printf("PC:\n\tdut:"FMT_PADDR" \n\tref:"FMT_PADDR"\n",pc,ref_r->pc);
-      
       diff_compare_regsdisplay(ref_r,i);
+      csr_show(ref_r);
       return false;
     }
   }
