@@ -14,15 +14,18 @@
 ***************************************************************************************/
 
 #include <isa.h>
-
+#define SYS_NUM 430
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
-
-  return 0;
+  cpu.mepc = epc;
+  if( NO < SYS_NUM){cpu.mcause = 10;}
+  else{cpu.mcause = 11;}
+  // Log("In ecall. mtvec:0x%08x cur_pc:%08x",cpu.mtvec, epc);
+  return cpu.mtvec;
 }
 
 word_t isa_query_intr() {
-  return INTR_EMPTY;
+  return cpu.mepc;
 }

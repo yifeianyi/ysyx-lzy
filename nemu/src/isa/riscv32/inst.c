@@ -35,11 +35,12 @@ enum {
 #define immJ() do { *imm = SEXT( BITS(i, 31, 31), 1) << 20 | BITS(i, 19, 12) << 12 | BITS(i, 20, 20) << 11 | BITS(i, 30, 25) << 5 | BITS(i, 24, 21) << 1;} while(0)
 #define immB() do { *imm = SEXT( BITS(i, 31, 31), 1) << 12 | BITS(i,  7,  7) << 11 | BITS(i, 30, 25) <<  5 | BITS(i, 11,  8) << 1; } while(0)
 
-static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
+static void decode_operand(Decode *s, int *rd, int *csr_id, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
   *rd     = BITS(i, 11, 7);
+  *csr_id = BITS(i, 31, 20);
   switch (type) {
     case TYPE_R: src1R(); src2R();         break;
     case TYPE_I: src1R();          immI(); break;
@@ -49,19 +50,59 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
     case TYPE_J:                   immJ(); break;
   }
 }
-
+static void csrrw_op(int rd, int csr_id, word_t src1){
+  word_t *csr = NULL;
+  switch (csr_id)
+  {
+  case CSR_MEPC: csr = &cpu.mepc;break;
+  case CSR_MTVEC: csr = &cpu.mtvec;break;
+  case CSR_MCAUSE: csr = &cpu.mcause;break;
+  case CSR_STATUS: csr = &cpu.mstatus;break;
+  
+  default:
+    Assert(csr,"csrrw_op error! csr_id:%d",csr_id);
+    break;
+  }
+  word_t t = *csr;
+  *csr = src1;
+  R(rd) = t;
+  // if(csr_id == CSR_MTVEC)Log("0x%08x",*csr);
+}
+static void csrrs_op(int rd, int csr_id, word_t src1){
+  word_t *csr = NULL;
+  switch (csr_id)
+  {
+  case CSR_MEPC: csr = &cpu.mepc;break;
+  case CSR_MTVEC: csr = &cpu.mtvec;break;
+  case CSR_MCAUSE: csr = &cpu.mcause;break;
+  case CSR_STATUS: csr = &cpu.mstatus;break;
+  
+  default:
+    Assert(csr,"csrrw_op error! csr_id:%d",csr_id);
+    break;
+  }
+  word_t t = *csr;
+  *csr = src1 | t;
+  R(rd) = t;
+  // if(csr_id == CSR_MTVEC)Log("0x%08x",*csr);
+}
 static int decode_exec(Decode *s) {
-  int rd = 0;
+  int rd = 0,csr_id = 0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(s, &rd, &csr_id, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
   INSTPAT_START();
+
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , R, csrrw_op(rd,csr_id,src1););
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , R, csrrs_op(rd,csr_id,src1););
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , R, s->dnpc = isa_raise_intr(R(17), s->pc));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, s->dnpc = isa_query_intr());
 
   //========= R-type ============
   INSTPAT("0000000 ????? ????? 000 ????? 01100 11", add    , R, R(rd) = src1 + src2);

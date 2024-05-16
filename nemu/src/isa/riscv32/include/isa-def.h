@@ -17,12 +17,16 @@
 #define __ISA_RISCV_H__
 
 #include <common.h>
-
+enum{
+  CSR_MEPC = 0x341,
+  CSR_MTVEC = 0x305,
+  CSR_MCAUSE = 0x342,
+  CSR_STATUS = 0x300,
+};
 typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
   word_t mepc,mcause,mstatus,mtvec;
   vaddr_t pc;
-
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
 // decode
